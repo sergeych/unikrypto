@@ -1,21 +1,19 @@
 package net.sergeych.unikrypto
 
+import kotlinx.coroutines.await
+import org.khronos.webgl.Uint8Array
 import runTest
+import kotlin.js.Promise
 import kotlin.test.*
 
 class SymmetricKeyTest {
     @Test
     fun testSymmetricKey() {
-        println("bnefore")
         return runTest {
-//        val a = Unicrypto.randomBytes(32)
-//        val b = Unicrypto.randomBytes(32)
-//        val k = SymmetricKeyImpl(a,b)
             val k: Unicrypto.SymmetricKey = Unicrypto.SymmetricKey(undefined)
             val c = k.etaEncrypt("Helluva".encodeToByteArray())
-//        println("> ${k.canDecrypt}")
-            println(c)
-//        println(k.etaDecryptToString(c))
+            println("${c}--")
+            println("${c.await()}--")
         }
     }
 }

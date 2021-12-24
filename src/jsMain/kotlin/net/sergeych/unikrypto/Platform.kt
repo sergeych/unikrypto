@@ -1,5 +1,8 @@
 package net.sergeych.unikrypto
 
+import org.khronos.webgl.Uint8Array
+import kotlin.js.Promise
+
 @JsModule("unicrypto")
 @JsNonModule
 external class Unicrypto  {
@@ -15,7 +18,7 @@ external class Unicrypto  {
 //    }
 
     class SymmetricKey(params: SymmetricKeyParams?) {
-        suspend fun etaEncrypt(plaintext: ByteArray): ByteArray
+        suspend fun etaEncrypt(plaintext: ByteArray): Promise<Uint8Array>
     }
 
 }

@@ -53,7 +53,7 @@ kotlin {
         val jvmTest by getting
         val jsMain by getting {
             dependencies {
-                implementation(npm("unicrypto", "1.8.13"))
+                implementation(npm("unicrypto", "1.9.0"))
             }
         }
         val jsTest by getting {

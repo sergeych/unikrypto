@@ -1,21 +1,25 @@
 package net.sergeych.unikrypto
 
+import kotlinx.coroutines.await
+
 class SymmetricKeyImpl(id: ByteArray,bits: ByteArray): SymmetricKey(id) {
 
-    private val key = Unicrypto.SymmetricKey(Unicrypto.SymmetricKeyParams(bits))
+    private val key = Unicrypto.SymmetricKey(SymmetricKeyParams(bits))
 
-//    override fun etaEncrtypt(plaintext: ByteArray): ByteArray = key.encrypt(plaintext)
-//    override fun etaDecrypt(ciphertext: ByteArray): ByteArray = key.decrypt(ciphertext)
+    override suspend fun etaEncrypt(plaintext: ByteArray): ByteArray = key.etaEncrypt(plaintext).await()
+
+    override suspend fun etaDecrypt(ciphertext: ByteArray): ByteArray = key.etaDecrypt(ciphertext).await()
+
+    override suspend fun keyBytes(): ByteArray = key.pack()
 
     init {
         if( bits.size != 32) throw IllegalArgumentException("wrong bits size, needs 32 got ${bits.size}")
     }
 }
 
-actual val SymmetricKeys: SymmtricKeyProvider = object : SymmtricKeyProvider {
-    override fun unpack(bits: ByteArray): SymmetricKey {
-        TODO("Not yet implemented")
-    }
+actual val SymmetricKeys: SymmetricKeyProvider = object : SymmetricKeyProvider {
+    override fun create(keyBytes: ByteArray,id: ByteArray): SymmetricKey =
+        SymmetricKeyImpl(id, keyBytes)
 
     override fun random() = SymmetricKeyImpl(Unicrypto.randomBytes(32),Unicrypto.randomBytes(32))
 

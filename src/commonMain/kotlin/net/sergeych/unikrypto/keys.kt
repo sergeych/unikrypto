@@ -1,5 +1,7 @@
 package net.sergeych.unikrypto
 
+import kotlin.random.Random
+
 enum class HashAlgorithm {
     SHA3_256, SHA3_384
 }
@@ -9,29 +11,32 @@ open class AbstractUnikey(val id: ByteArray,val canSign: Boolean = false,
                      val canEncrypt: Boolean = false,
                      val canDecrypt: Boolean = false) {
 
-    open fun sign(data: ByteArray, hashAlgorithm: HashAlgorithm = HashAlgorithm.SHA3_384): ByteArray =
+    open suspend fun sign(data: ByteArray, hashAlgorithm: HashAlgorithm = HashAlgorithm.SHA3_384): ByteArray =
         throw OperationNotSupported()
 
-    open fun checkSignature(
+    open suspend fun checkSignature(
         data: ByteArray,
         signature: ByteArray,
         hashAlgorithm: HashAlgorithm = HashAlgorithm.SHA3_384
     ): Boolean = throw OperationNotSupported()
 
-    open fun etaEncrtypt(plaintext: ByteArray): ByteArray = throw OperationNotSupported()
+    open suspend fun etaEncrypt(plaintext: ByteArray): ByteArray = throw OperationNotSupported()
 
-    fun etaEncrypt(plaintext: String): ByteArray = etaEncrtypt(plaintext.encodeToByteArray())
+    suspend fun etaEncrypt(plaintext: String): ByteArray = etaEncrypt(plaintext.encodeToByteArray())
 
-    open fun etaDecrypt(ciphertext: ByteArray): ByteArray = throw OperationNotSupported()
+    open suspend fun etaDecrypt(ciphertext: ByteArray): ByteArray = throw OperationNotSupported()
 
-    fun etaDecryptToString(ciphertext: ByteArray): String = etaDecrypt(ciphertext).decodeToString()
+    suspend fun etaDecryptToString(ciphertext: ByteArray): String = etaDecrypt(ciphertext).decodeToString()
+
+    open suspend fun keyBytes(): ByteArray = throw OperationNotSupported()
+
 }
 
 open class SymmetricKey(id: ByteArray): AbstractUnikey(id, canEncrypt = true, canDecrypt = true)
 
-interface SymmtricKeyProvider {
-    fun unpack(bits: ByteArray): SymmetricKey
+interface SymmetricKeyProvider {
+    fun create(keyBytes: ByteArray,id: ByteArray = Random.Default.nextBytes(32)): SymmetricKey
     fun random(): SymmetricKey
 }
 
-expect val SymmetricKeys: SymmtricKeyProvider
+expect val SymmetricKeys: SymmetricKeyProvider

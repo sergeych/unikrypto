@@ -2,6 +2,7 @@ package net.sergeych.unikrypto
 
 import kotlinx.coroutines.await
 import runTest
+import kotlin.random.Random
 import kotlin.test.*
 
 class SymmetricKeyTest {
@@ -32,8 +33,20 @@ class SymmetricKeyTest {
             println(k.id)
             val src2 = k.etaDecryptToString(k.etaEncrypt(src))
             assertEquals(src, src2)
-            val k2 = SymmetricKeys.create(k.keyBytes())
+            val k2 = SymmetricKeys.create(k.keyBytes(), k.id.asByteArray)
+            assertTrue { k2.id == k.id }
+            assertTrue { k2 == k }
             assertEquals(src, k2.etaDecryptToString(k.etaEncrypt(src)))
         }
     }
+
+    @Test
+    fun decodeBase64Compact() {
+        for(x in 1..34) {
+            val a = Random.Default.nextBytes(x)
+            val x = a.toBase64Compact()
+            assertContentEquals(a, x.decodeBase64Compact())
+        }
+    }
+
 }

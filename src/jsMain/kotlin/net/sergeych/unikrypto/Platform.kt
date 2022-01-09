@@ -11,6 +11,8 @@ external class Unicrypto  {
 
     companion object {
         fun randomBytes(size: Int): ByteArray
+        fun encode64(data: ByteArray): String
+        fun decode64(text: String): ByteArray
     }
 
     class SymmetricKey(params: SymmetricKeyParams = definedExternally) {

@@ -3,7 +3,9 @@ package net.sergeych.unikrypto
 import kotlin.random.Random
 
 enum class HashAlgorithm {
-    SHA3_256, SHA3_384
+    SHA3_256, SHA3_384;
+
+    fun toUniversa(): String = name.lowercase()
 }
 
 open class AbstractUnikey(val id: KeyIdentity,val canSign: Boolean = false,
@@ -45,6 +47,10 @@ open class AbstractUnikey(val id: KeyIdentity,val canSign: Boolean = false,
                 && other.canEncrypt == canEncrypt
     }
 
+    override fun hashCode(): Int {
+        return id.asString.hashCode()
+    }
+
 }
 
 open class SymmetricKey(id: BytesId): AbstractUnikey(id, canEncrypt = true, canDecrypt = true) {
@@ -75,7 +81,7 @@ abstract class PublicKey(id: KeyIdentity): AbstractUnikey(id, canEncrypt = true,
     override suspend fun etaEncrypt(plaintext: ByteArray): ByteArray {
         if( plaintext.size <= maxMessageSize ) return encryptBlock(plaintext)
         val k = SymmetricKeys.random()
-        var encodedMessage = k.pack() + k.etaEncrypt(plaintext)
+        val encodedMessage = k.pack() + k.etaEncrypt(plaintext)
 
         val part1 = encodedMessage.sliceArray(0 until maxMessageSize )
         val part2 = encodedMessage.sliceArray( maxMessageSize until encodedMessage.size)

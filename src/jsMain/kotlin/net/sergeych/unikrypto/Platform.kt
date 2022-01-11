@@ -35,6 +35,7 @@ external class Unicrypto  {
         fun pack(): ByteArray
     }
 
+    @Suppress("unused")
     class PublicKey {
         fun verify(message: ByteArray,signature: ByteArray,options: SigningOptions): Promise<Boolean>
         fun encrypt(plaintext: ByteArray,options: OAEPOptions): Promise<ByteArray>
@@ -59,21 +60,16 @@ external class Unicrypto  {
 
         val publicKey: PublicKey
 
-        val longAddress: KeyAddress
-        val shortAddress: KeyAddress
-
         suspend fun pack(): Promise<ByteArray>
 
         companion object {
             suspend fun generate(params: PrivateKeyParams): Promise<PrivateKey>
-            suspend fun unpack(packed: Uint8Array): Promise<PrivateKey>
+            suspend fun unpack(packed: dynamic,dummy: dynamic = definedExternally): Promise<PrivateKey>
         }
     }
 
+    @Suppress("unused")
     class KeyAddress {
-
-//        constructor(bytes: ByteArray)
-//        constructor(str: String)
 
         val asBinary: ByteArray
         val asString: String

@@ -5,7 +5,7 @@ import org.khronos.webgl.Uint8Array
 
 internal class KeyAddressIdentity(val address: Unicrypto.KeyAddress) : GenericKeyIdentity() {
     override fun matches(obj: Any): Boolean = when (obj) {
-        is AbstractUnikey -> obj.id == this
+        is IdentifiableKey -> obj.id == this
         is KeyIdentity -> obj.asString == asString
         else -> false
     }

@@ -11,8 +11,8 @@ internal class String_toolsKtTest {
     fun decodeBase64Compact() {
         for(x in 1..34) {
             val a = Random.Default.nextBytes(x)
-            val x = a.toBase64Compact()
-            assertArrayEquals(a, x.decodeBase64Compact())
+            val z = a.encodeToBase64Compact()
+            assertArrayEquals(a, z.decodeBase64Compact())
         }
     }
 

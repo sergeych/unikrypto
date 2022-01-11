@@ -42,8 +42,7 @@ class AssymmetricJvmTest {
             println(k.id.asString)
             println(k2.id.asString)
             assertTrue { k2.id == k.id }
-            assertTrue { k2 == k.publicKey }
-            assertFalse { k2 == k }
+            assertTrue { k2.id == k.publicKey.id }
         }
     }
 }

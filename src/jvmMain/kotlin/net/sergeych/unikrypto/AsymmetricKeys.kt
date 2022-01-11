@@ -7,7 +7,7 @@ internal class KeyAdddressIdentity(val address: KeyAddress) : GenericKeyIdentity
     override fun matches(obj: Any): Boolean = when (obj) {
         is KeyAddress -> address.isMatchingKeyAddress(obj)
         is KeyAdddressIdentity -> address.isMatchingKeyAddress(obj.address)
-        is AbstractUnikey -> obj.id.matches(this)
+        is IdentifiableKey -> obj.id.matches(this)
         is com.icodici.crypto.PrivateKey -> obj.isMatchingKeyAddress(address)
         is com.icodici.crypto.PublicKey -> obj.isMatchingKeyAddress(address)
         else -> false

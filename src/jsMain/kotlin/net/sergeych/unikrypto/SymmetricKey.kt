@@ -18,6 +18,8 @@ class SymmetricKeyImpl(id: ByteArray,bits: ByteArray): SymmetricKey(id) {
 }
 
 actual val SymmetricKeys: SymmetricKeyProvider = object : SymmetricKeyProvider {
+    override val keySizes = arrayOf(32)
+
     override fun create(keyBytes: ByteArray,id: ByteArray): SymmetricKey =
         SymmetricKeyImpl(id, keyBytes)
 

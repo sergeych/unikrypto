@@ -1,4 +1,13 @@
 package net.sergeych.unikrypto
 
-actual val SymmetricKeys: net.sergeych.unikrypto.SymmetricKeyProvider
-    get() = TODO("Not yet implemented")
+import kotlin.random.Random
+
+actual val SymmetricKeys: SymmetricKeyProvider = object : SymmetricKeyProvider {
+    override fun create(keyBytes: ByteArray, id: ByteArray): SymmetricKey =
+        SymmetricKeyImpl(id, com.icodici.crypto.SymmetricKey(keyBytes))
+
+
+    override fun random(): SymmetricKey =
+        SymmetricKeyImpl(Random.Default.nextBytes(32), com.icodici.crypto.SymmetricKey())
+}
+

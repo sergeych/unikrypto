@@ -49,11 +49,15 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
-        val jvmMain by getting
+        val jvmMain by getting {
+            dependencies {
+                implementation("com.icodici:universa_core:3.14.3")
+            }
+        }
         val jvmTest by getting
         val jsMain by getting {
             dependencies {
-                implementation(npm("unicrypto", "1.9.0"))
+                implementation(npm("unicrypto", "1.10.0"))
             }
         }
         val jsTest by getting {

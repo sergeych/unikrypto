@@ -6,30 +6,6 @@ enum class HashAlgorithm {
     SHA3_256, SHA3_384
 }
 
-interface KeyIdentity {
-    fun matches(obj: Any): Boolean
-    val asByteArray: ByteArray
-    val asString: String
-}
-
-abstract class GenericKeyIdentity: KeyIdentity {
-    override fun equals(other: Any?): Boolean = other?.let { matches(it) } ?: false
-}
-
-class BytesId(val id: ByteArray): GenericKeyIdentity() {
-    override fun matches(obj: Any): Boolean {
-        return (obj is BytesId) && obj.id contentEquals id
-    }
-    override val asByteArray: ByteArray
-        get() = id
-    override val asString: String
-        get() = id.toBase64Compact()
-
-    companion object {
-        fun fromString(data: String) = BytesId(data.decodeBase64Compact())
-    }
-}
-
 open class AbstractUnikey(val id: KeyIdentity,val canSign: Boolean = false,
                      val canCheckSignature: Boolean = false,
                      val canEncrypt: Boolean = false,
@@ -38,11 +14,20 @@ open class AbstractUnikey(val id: KeyIdentity,val canSign: Boolean = false,
     open suspend fun sign(data: ByteArray, hashAlgorithm: HashAlgorithm = HashAlgorithm.SHA3_384): ByteArray =
         throw OperationNotSupported()
 
+    suspend fun sign(text: String,hashAlgorithm: HashAlgorithm = HashAlgorithm.SHA3_384): ByteArray
+      = sign(text.encodeToByteArray(), hashAlgorithm)
+
     open suspend fun checkSignature(
         data: ByteArray,
         signature: ByteArray,
         hashAlgorithm: HashAlgorithm = HashAlgorithm.SHA3_384
     ): Boolean = throw OperationNotSupported()
+
+    suspend fun checkSignature(
+        text: String,
+        signature: ByteArray,
+        hashAlgorithm: HashAlgorithm = HashAlgorithm.SHA3_384
+    ): Boolean = checkSignature(text.encodeToByteArray(), signature, hashAlgorithm)
 
     open suspend fun etaEncrypt(plaintext: ByteArray): ByteArray = throw OperationNotSupported()
 
@@ -52,10 +37,12 @@ open class AbstractUnikey(val id: KeyIdentity,val canSign: Boolean = false,
 
     suspend fun etaDecryptToString(ciphertext: ByteArray): String = etaDecrypt(ciphertext).decodeToString()
 
-    open suspend fun keyBytes(): ByteArray = throw OperationNotSupported()
+    open suspend fun pack(): ByteArray = throw OperationNotSupported()
 
     override fun equals(other: Any?): Boolean {
-        return other != null && other is AbstractUnikey && other.id == id
+        return other != null && other is AbstractUnikey && other.id == id && other.canSign == canSign
+                && other.canDecrypt == canDecrypt && other.canCheckSignature == canCheckSignature
+                && other.canEncrypt == canEncrypt
     }
 
 }
@@ -71,11 +58,59 @@ interface SymmetricKeyProvider {
 
 expect val SymmetricKeys: SymmetricKeyProvider
 
-//open class PrivateKey(id: ByteArray): AbstractUnikey(id, canDecrypt = true, canSign = true)
-//
-//open class PublicKey(id: ByteArray): AbstractUnikey(id, canEncrypt = true, canCheckSignature = true)
-//
-//interface PublickKeyProvider {
-//
-//}
+abstract class PublicKey(id: KeyIdentity): AbstractUnikey(id, canEncrypt = true, canCheckSignature = true) {
+    abstract val bitStrength: Int
+
+    open val maxMessageSize by lazy {
+        // for SHA256 or SHA3_256 overhead is:
+        bitStrength/8 - 32 * 2 - 2
+    }
+
+    open val minimumEncryptedSize by lazy {
+        bitStrength/8
+    }
+
+    abstract suspend fun encryptBlock(plaintext: ByteArray): ByteArray
+
+    override suspend fun etaEncrypt(plaintext: ByteArray): ByteArray {
+        if( plaintext.size <= maxMessageSize ) return encryptBlock(plaintext)
+        val k = SymmetricKeys.random()
+        var encodedMessage = k.pack() + k.etaEncrypt(plaintext)
+
+        val part1 = encodedMessage.sliceArray(0 until maxMessageSize )
+        val part2 = encodedMessage.sliceArray( maxMessageSize until encodedMessage.size)
+
+        return encryptBlock(part1) + part2
+    }
+}
+
+abstract class PrivateKey(id: KeyIdentity): AbstractUnikey(id, canDecrypt = true, canSign = true) {
+    abstract val publicKey: PublicKey
+
+    abstract suspend fun decryptBlock(ciphertext: ByteArray): ByteArray
+
+    override suspend fun etaDecrypt(ciphertext: ByteArray): ByteArray {
+        val pubk = publicKey
+        if( ciphertext.size < pubk.minimumEncryptedSize )
+            throw UnikryptoError("encrypted block is too small: ${ciphertext.size} should be >= ${pubk.minimumEncryptedSize}")
+        if( ciphertext.size == pubk.minimumEncryptedSize )
+            return decryptBlock(ciphertext)
+
+        val part1 = decryptBlock(ciphertext.sliceArray(0 until pubk.minimumEncryptedSize))
+        val part2 = ciphertext.slice(pubk.minimumEncryptedSize until ciphertext.size)
+        val encodedMessage = part1 + part2
+
+        val key = SymmetricKeys.create(encodedMessage.sliceArray(0 .. 31))
+        return key.etaDecrypt(encodedMessage.sliceArray(32 until encodedMessage.size))
+    }
+}
+
+
+interface AsymmetricKeysProvider {
+    suspend fun generate(bitStrength: Int): PrivateKey
+    suspend fun unpackPublic(data: ByteArray): PublicKey
+    suspend fun unpackPrivate(data: ByteArray): PrivateKey
+}
+
+expect val AsymmetricKeys: AsymmetricKeysProvider
 

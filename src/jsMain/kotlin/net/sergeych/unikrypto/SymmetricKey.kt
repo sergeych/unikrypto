@@ -10,7 +10,7 @@ class SymmetricKeyImpl(id: ByteArray,bits: ByteArray): SymmetricKey(id) {
 
     override suspend fun etaDecrypt(ciphertext: ByteArray): ByteArray = key.etaDecrypt(ciphertext).await()
 
-    override suspend fun keyBytes(): ByteArray = key.pack()
+    override suspend fun pack(): ByteArray = key.pack()
 
     init {
         if( bits.size != 32) throw IllegalArgumentException("wrong bits size, needs 32 got ${bits.size}")
@@ -24,3 +24,4 @@ actual val SymmetricKeys: SymmetricKeyProvider = object : SymmetricKeyProvider {
     override fun random() = SymmetricKeyImpl(Unicrypto.randomBytes(32),Unicrypto.randomBytes(32))
 
 }
+

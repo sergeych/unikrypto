@@ -21,6 +21,7 @@ class SignedRecordTest {
             val sr = SignedRecord.unpack(packed)
             println(sr.payload)
             assertEquals(payload1, sr.decode())
+            assertEquals(k.id, sr.publicKey.id)
         }
     }
 

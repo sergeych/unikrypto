@@ -36,13 +36,24 @@ dependencies {
 ~~~kotlin
 import net.sergeych.unikrypto.*
 
+@Serializable
+data class MyProtectedData(value: Int)
+
 suspend fun sampleSign(text: String): Pair<PrivateKey,ByteArray> {
     val key = AsymmetricKeys.generate(2048)
     return key to key.sign(text)
+    
+    val data = MyProtectedData(42)
+    val packedSignedRecord = key.signRecord(data)
+    val sr = SignedRecord.unpack(packed)
+    assertEquals(data, sr.decode())
+    assertTrue(key.id == sr.publicKey.id)
 }
 ~~~
 
 ## Features
+
+**works the same in browser, desktop, server and node.js**. Now you can share your code slmost everywhere. Native support is planned (there are C++ libraries fro it, buy C binding are required by kotlin native).
 
 **Coroutine support on both platforms**. In Kotlin JS many slow processes are scheduled to run in the worker, not blocking calling thread. All JS stiff is hidden under suspend functions (coroutines).
 
@@ -51,6 +62,8 @@ suspend fun sampleSign(text: String): Pair<PrivateKey,ByteArray> {
 **Smart EtA encryption for public keys**. It is possible to encrypt long plaintext with private keys with a minimal overhead. The encryption is binary compatible with universa one as long as all the data fit the private key block. Longer data is automatically wrapped into a radnom key encrypted container that is partially placed in the private key encrypted block and the rest is appended to it. Minimal overhead, no headache.
 
 **Generalized key identities**: modern alternative to key fingerprints less ancient key addresses, takes the best of these two in the kotlin style: convenient tool to organize, compare and find keys without weakening the identified keys.
+
+**Signed records with serialization support** using kotlinx serialization and [boss-serialization-mp](https://github.com/sergeych/boss-serialization-mp).
 
 ## Roadmap
 

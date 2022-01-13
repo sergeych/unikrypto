@@ -1,5 +1,8 @@
 package net.sergeych.unikrypto
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
 /**
  * The key identity allows to compare and look for any [IdentifiableKey] instances in cryptographically safe manner,
  * e.g. providing no data that could help to compromise (bruteforce, etc) the key itself. For example, for symmetric
@@ -19,53 +22,63 @@ package net.sergeych.unikrypto
  * possible in theory to exist several public key with matching identity the probability is negligible.
  * If, still, a guarantee is needed, compare packed public keys for equality.
  */
-interface KeyIdentity {
-    /**
-     * Check that some identity matches this one. This fun _must be used in equality operator_ in any
-     * in implementation.
-     */
-    fun matches(obj: Any): Boolean
+@Serializable
+sealed class KeyIdentity {
 
-    /**
-     * Represent identity as binary data. The identities with equal binary are matching.
-     */
-    val asByteArray: ByteArray
+    abstract val id: ByteArray
 
     /**
      * String representation of the identity. Could also be used to compare identity for matching.
      */
-    val asString: String
-}
+    open val asString: String get() = id.encodeToBase64Compact()
 
-/**
- * Helper class that implements equality operator using [matches] and provides [hashCode] based on [asString]
- * representation.
- */
-abstract class GenericKeyIdentity: KeyIdentity {
-    override fun equals(other: Any?): Boolean = other?.let { matches(it) } ?: false
+    override fun equals(other: Any?): Boolean = other?.let {
+        if (other is KeyIdentity) id contentEquals other.id
+        else false
+    } ?: false
 
-    override fun hashCode(): Int = asString.hashCode()
+    override fun hashCode(): Int {
+        if( id.size == 0 ) return 0
 
-    override fun toString(): String {
-        return "KI:$asString"
+        var result = 1
+
+        for (element in id) {
+            val i = element.toInt()
+            val elementHash = (i xor (i ushr 4))
+            result = 31 * result + elementHash
+        }
+
+        return result
     }
+
+    override fun toString(): String = asString
 }
 
 /**
  * Byte-sequence identity. Should be used when the identity could not be safely derived from the key itself (e.g.
  * symmetric keys, passwords, etc).
  */
-class BytesId(val id: ByteArray): GenericKeyIdentity() {
-    override fun matches(obj: Any): Boolean {
-        return (obj is BytesId) && obj.id contentEquals id
-    }
-    override val asByteArray: ByteArray
-        get() = id
-    override val asString: String
-        get() = id.encodeToBase64Compact()
+@Serializable
+@SerialName("BytesId")
+class BytesId(override val id: ByteArray) : KeyIdentity() {
 
     companion object {
         fun fromString(data: String) = BytesId(data.decodeBase64Compact())
     }
+}
+
+@Suppress("unused")
+@Serializable
+@SerialName("PasswordId")
+class PasswordId(
+    override val id: ByteArray,
+    val hashAlgorithm: HashAlgorithm,
+    val rounds: Int,
+    val keyLength: Int,
+    val keyOffseet: Int,
+    val generatedLength: Int,
+    val seed: ByteArray
+) : KeyIdentity() {
+
 }
 

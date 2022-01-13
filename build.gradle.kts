@@ -1,5 +1,6 @@
 plugins {
     kotlin("multiplatform") version "1.6.10"
+    kotlin("plugin.serialization") version "1.6.10"
     `maven-publish`
 }
 
@@ -44,7 +45,9 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
-//                implementation("net.sergeych:boss-serialization-mp:0.0.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
+                implementation("net.sergeych:boss-serialization-mp:0.0.2-SNAPSHOT")
             }
         }
         val commonTest by getting {

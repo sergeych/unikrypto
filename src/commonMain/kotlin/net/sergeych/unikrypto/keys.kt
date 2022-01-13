@@ -6,12 +6,14 @@ import kotlin.random.Random
  * Hash methods used in new uniKrypto library. older hashes are intentionally not listed (at least so far)
  */
 enum class HashAlgorithm {
-    SHA3_256, SHA3_384;
+    SHA3_256, SHA3_384, SHA3_512,
+    SHA256, SHA512;
 
     /**
      * Convert to a string representation used in Universa notation
      */
     fun toUniversa(): String = name.lowercase()
+    // "sha256" | "sha384" | "sha512" | "sha512/256" | "sha3_256" | "sha3_384" | "sha3_512";
 }
 
 /**
@@ -83,6 +85,8 @@ interface SigningKey: IdentifiableKey {
      */
     suspend fun sign(text: String,hashAlgorithm: HashAlgorithm = HashAlgorithm.SHA3_384): ByteArray
             = sign(text.encodeToByteArray(), hashAlgorithm)
+
+    val publicKey: VerifyingKey
 }
 
 /**
@@ -136,7 +140,7 @@ expect val SymmetricKeys: SymmetricKeyProvider
  * Public key is a key capable of encrypting and verifying signatures. It has some specific fields that extend these
  * interfaces
  */
-abstract class PublicKey(override val id: KeyIdentity): EncryptingKey, VerifyingKey  {
+abstract class PublicKey: EncryptingKey, VerifyingKey  {
 
     /**
      * Bits strength. Usually it also means the block size (as (strength+7)/8 but most often strength os a power of 2
@@ -192,13 +196,9 @@ abstract class PublicKey(override val id: KeyIdentity): EncryptingKey, Verifying
  * The private key is capable of decrypting and signing. It also has unique ability to provide corresponding
  * public key.
  */
-abstract class PrivateKey(override val id: KeyIdentity) : DecryptingKey, SigningKey  {
+abstract class PrivateKey: DecryptingKey, SigningKey  {
 
-    /**
-     * The key that is available to public, allowing checking data signed with this Private Key and encrypt messages
-     * available for this private key. Note that `this.id == this.publicKey.id` is always true.
-     */
-    abstract val publicKey: PublicKey
+    abstract override val publicKey: PublicKey
 
     /**
      * Platform-specific method to decrypt a block. The block size should be `publicKey.minimumEncryptedSize` exactly.

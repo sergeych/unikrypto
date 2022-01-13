@@ -3,24 +3,11 @@ package net.sergeych.unikrypto
 import kotlinx.coroutines.await
 import org.khronos.webgl.Uint8Array
 
-internal class KeyAddressIdentity(val address: Unicrypto.KeyAddress) : GenericKeyIdentity() {
-    override fun matches(obj: Any): Boolean = when (obj) {
-        is IdentifiableKey -> obj.id == this
-        is KeyIdentity -> obj.asString == asString
-        else -> false
-    }
-
-    override val asByteArray: ByteArray
-        get() = address.asBinary
-
-    override val asString: String
-        get() = address.asString
-
-}
-
 private val defaultOAEPOptions = OAEPOptions()
 
-internal class PublicKeyImpl(private val key: Unicrypto.PublicKey) : PublicKey(KeyAddressIdentity(key.longAddress)) {
+internal class PublicKeyImpl(private val key: Unicrypto.PublicKey) : PublicKey() {
+    override val id: KeyIdentity by lazy { BytesId(key.longAddress.asBinary) }
+
     override val bitStrength: Int by lazy { key.getBitStrength() }
 
     override suspend fun encryptBlock(plaintext: ByteArray): ByteArray =
@@ -32,7 +19,10 @@ internal class PublicKeyImpl(private val key: Unicrypto.PublicKey) : PublicKey(K
         = key.verify(data, signature, SigningOptions(pssHash = hashAlgorithm.toUniversa())).await()
 }
 
-internal class PrivateKeyImpl(private val key: Unicrypto.PrivateKey) : PrivateKey(KeyAddressIdentity(key.publicKey.longAddress)) {
+internal class PrivateKeyImpl(private val key: Unicrypto.PrivateKey) : PrivateKey() {
+
+    override val id: KeyIdentity by lazy { BytesId(key.publicKey.longAddress.asBinary) }
+
     override val publicKey: PublicKey by lazy { PublicKeyImpl(key.publicKey) }
 
     override suspend fun decryptBlock(ciphertext: ByteArray): ByteArray =

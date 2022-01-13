@@ -1,30 +1,20 @@
 package net.sergeych.unikrypto
 
 import com.icodici.crypto.HashType
-import com.icodici.crypto.KeyAddress
-
-internal class KeyAdddressIdentity(val address: KeyAddress) : GenericKeyIdentity() {
-    override fun matches(obj: Any): Boolean = when (obj) {
-        is KeyAddress -> address.isMatchingKeyAddress(obj)
-        is KeyAdddressIdentity -> address.isMatchingKeyAddress(obj.address)
-        is IdentifiableKey -> obj.id.matches(this)
-        is com.icodici.crypto.PrivateKey -> obj.isMatchingKeyAddress(address)
-        is com.icodici.crypto.PublicKey -> obj.isMatchingKeyAddress(address)
-        else -> false
-    }
-
-    override val asByteArray: ByteArray = address.packed
-    override val asString: String = address.toString()
-}
 
 fun HashAlgorithm.toUnicrypto(): HashType =
     when (this) {
         HashAlgorithm.SHA3_384 -> HashType.SHA3_384
         HashAlgorithm.SHA3_256 -> HashType.SHA3_256
+        HashAlgorithm.SHA3_512 -> HashType.SHA3_512
+        HashAlgorithm.SHA256 -> HashType.SHA256
+        HashAlgorithm.SHA512 -> HashType.SHA512
     }
 
 internal class PublicKeyImpl(private val key: com.icodici.crypto.PublicKey) :
-    PublicKey(KeyAdddressIdentity(key.longAddress)) {
+    PublicKey() {
+
+    override val id by lazy { BytesId(key.longAddress.packed) }
 
     override val bitStrength: Int = key.bitStrength
 
@@ -37,7 +27,9 @@ internal class PublicKeyImpl(private val key: com.icodici.crypto.PublicKey) :
 }
 
 internal class PrivateKeyImpl(private val key: com.icodici.crypto.PrivateKey) :
-    PrivateKey(KeyAdddressIdentity(key.publicKey.longAddress)) {
+    PrivateKey() {
+
+    override val id by lazy { BytesId(key.publicKey.longAddress.packed) }
 
     override val publicKey by lazy { PublicKeyImpl(key.publicKey) }
 

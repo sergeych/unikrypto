@@ -24,3 +24,15 @@ fun ByteArray.encodeToBase64Compact(): String {
     while( end > 0 && result[end] == '=') end--
     return result.slice(0..end)
 }
+
+private val hexDigits = "0123456789abcdef"
+
+fun ByteArray.encodeToHex(): String {
+    val result = StringBuilder()
+    for( b in this) {
+        val u = b.toInt()
+        result.append(hexDigits[(u shr 4) and 0x0f])
+        result.append(hexDigits[u and 0x0f])
+    }
+    return result.toString()
+}

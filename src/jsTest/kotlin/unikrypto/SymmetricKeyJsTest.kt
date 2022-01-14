@@ -33,7 +33,7 @@ class SymmetricKeyJsTest {
             println(k.id)
             val src2 = k.etaDecryptToString(k.etaEncrypt(src))
             assertEquals(src, src2)
-            val k2 = SymmetricKeys.create(k.pack(), k.id.id)
+            val k2 = SymmetricKeys.create(k.pack(), k.id)
             assertTrue { k2.id == k.id }
             assertEquals(src, k2.etaDecryptToString(k.etaEncrypt(src)))
         }

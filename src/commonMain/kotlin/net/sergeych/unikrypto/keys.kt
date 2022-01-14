@@ -16,6 +16,10 @@ enum class HashAlgorithm {
     // "sha256" | "sha384" | "sha512" | "sha512/256" | "sha3_256" | "sha3_384" | "sha3_512";
 }
 
+expect suspend fun HashAlgorithm.digest(source: ByteArray): ByteArray
+
+suspend fun HashAlgorithm.digest(text: String): ByteArray = digest(text.encodeToByteArray())
+
 /**
  * Universa MP key. It _has an identity_ and could be packed to binary
  * representation. Any particular key though implements some of [EncryptingKey], [DecryptingKey],
@@ -118,8 +122,8 @@ interface VerifyingKey: IdentifiableKey {
  * It uses simple equality-based independent IDs not derivable from the key (but possibly derivable from password
  * but in independent manner)
  */
-abstract class SymmetricKey(override val id: BytesId): EncryptingKey, DecryptingKey {
-    constructor(id: ByteArray) : this(BytesId(id))
+abstract class SymmetricKey(override val id: KeyIdentity): EncryptingKey, DecryptingKey {
+    abstract val keyBytes: ByteArray
 }
 
 /**
@@ -127,7 +131,7 @@ abstract class SymmetricKey(override val id: BytesId): EncryptingKey, Decrypting
  */
 interface SymmetricKeyProvider {
     val keySizes: Array<Int>
-    fun create(keyBytes: ByteArray,id: ByteArray = Random.Default.nextBytes(32)): SymmetricKey
+    fun create(keyBytes: ByteArray,id: KeyIdentity = BytesId(Random.Default.nextBytes(32))): SymmetricKey
     fun random(): SymmetricKey
 }
 

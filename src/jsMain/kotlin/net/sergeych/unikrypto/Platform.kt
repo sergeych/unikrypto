@@ -7,8 +7,8 @@ data class SymmetricKeyParams(val keyBytes: ByteArray)
 data class PrivateKeyParams(val strength: Int)
 
 data class SigningOptions(
-    val salt: ByteArray?=null,
-    val salLength: Int?=null,
+    val salt: ByteArray? = null,
+    val salLength: Int? = null,
     val mgf1Hash: String = "sha512",
     val pssHash: String = "sha3_384"
 )
@@ -19,14 +19,26 @@ data class OAEPOptions(
     val oaepHash: String? = null
 )
 
+data class PBKDF2Params(
+    val rounds: Int,
+    val keyLength: Int,
+    val password: String,
+    val salt: ByteArray
+)
+
 @JsModule("unicrypto")
 @JsNonModule
-external class Unicrypto  {
+external class Unicrypto {
+
+    object SHA {
+        fun getDigest(name: String, source: ByteArray): Promise<ByteArray>
+    }
 
     companion object {
         fun randomBytes(size: Int): ByteArray
         fun encode64(data: ByteArray): String
         fun decode64(text: String): ByteArray
+        fun pbkdf2(hashAlgoritmName: String, params: PBKDF2Params): Promise<ByteArray>
     }
 
     class SymmetricKey(params: SymmetricKeyParams = definedExternally) {
@@ -37,8 +49,8 @@ external class Unicrypto  {
 
     @Suppress("unused")
     class PublicKey {
-        fun verify(message: ByteArray,signature: ByteArray,options: SigningOptions): Promise<Boolean>
-        fun encrypt(plaintext: ByteArray,options: OAEPOptions): Promise<ByteArray>
+        fun verify(message: ByteArray, signature: ByteArray, options: SigningOptions): Promise<Boolean>
+        fun encrypt(plaintext: ByteArray, options: OAEPOptions): Promise<ByteArray>
 
         fun getBitStrength(): Int
 
@@ -56,7 +68,7 @@ external class Unicrypto  {
     class PrivateKey {
 
         fun sign(message: ByteArray, options: SigningOptions): Promise<ByteArray>
-        fun decrypt(ciphertext: ByteArray,options: OAEPOptions): Promise<ByteArray>
+        fun decrypt(ciphertext: ByteArray, options: OAEPOptions): Promise<ByteArray>
 
         val publicKey: PublicKey
 
@@ -64,7 +76,7 @@ external class Unicrypto  {
 
         companion object {
             suspend fun generate(params: PrivateKeyParams): Promise<PrivateKey>
-            suspend fun unpack(packed: dynamic,dummy: dynamic = definedExternally): Promise<PrivateKey>
+            suspend fun unpack(packed: dynamic, dummy: dynamic = definedExternally): Promise<PrivateKey>
         }
     }
 

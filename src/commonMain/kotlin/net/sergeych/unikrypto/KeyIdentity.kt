@@ -2,6 +2,7 @@ package net.sergeych.unikrypto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlin.random.Random
 
 /**
  * The key identity allows to compare and look for any [IdentifiableKey] instances in cryptographically safe manner,
@@ -39,16 +40,7 @@ sealed class KeyIdentity {
 
     override fun hashCode(): Int {
         if( id.size == 0 ) return 0
-
-        var result = 1
-
-        for (element in id) {
-            val i = element.toInt()
-            val elementHash = (i xor (i ushr 4))
-            result = 31 * result + elementHash
-        }
-
-        return result
+        return id.contentHashCode()
     }
 
     override fun toString(): String = asString
@@ -64,6 +56,7 @@ class BytesId(override val id: ByteArray) : KeyIdentity() {
 
     companion object {
         fun fromString(data: String) = BytesId(data.decodeBase64Compact())
+        fun random() = BytesId(Random.nextBytes(32))
     }
 }
 
@@ -81,4 +74,11 @@ class PasswordId(
 ) : KeyIdentity() {
 
 }
+
+expect suspend fun PerformPBKDF2(
+    password: String,
+    size: Int,
+    hash: HashAlgorithm,
+    rounds: Int,
+    salt: ByteArray): ByteArray
 

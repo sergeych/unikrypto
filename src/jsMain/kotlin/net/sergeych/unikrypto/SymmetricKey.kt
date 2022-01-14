@@ -2,9 +2,9 @@ package net.sergeych.unikrypto
 
 import kotlinx.coroutines.await
 
-class SymmetricKeyImpl(id: ByteArray,bits: ByteArray): SymmetricKey(id) {
+class SymmetricKeyImpl(id: KeyIdentity, override val keyBytes: ByteArray): SymmetricKey(id) {
 
-    private val key = Unicrypto.SymmetricKey(SymmetricKeyParams(bits))
+    private val key = Unicrypto.SymmetricKey(SymmetricKeyParams(keyBytes))
 
     override suspend fun etaEncrypt(plaintext: ByteArray): ByteArray = key.etaEncrypt(plaintext).await()
 
@@ -13,17 +13,19 @@ class SymmetricKeyImpl(id: ByteArray,bits: ByteArray): SymmetricKey(id) {
     override suspend fun pack(): ByteArray = key.pack()
 
     init {
-        if( bits.size != 32) throw IllegalArgumentException("wrong bits size, needs 32 got ${bits.size}")
+        if( keyBytes.size != 32) throw IllegalArgumentException("wrong bits size, needs 32 got ${keyBytes.size}")
     }
 }
 
 actual val SymmetricKeys: SymmetricKeyProvider = object : SymmetricKeyProvider {
     override val keySizes = arrayOf(32)
 
-    override fun create(keyBytes: ByteArray,id: ByteArray): SymmetricKey =
+    override fun create(keyBytes: ByteArray,id: KeyIdentity): SymmetricKey =
         SymmetricKeyImpl(id, keyBytes)
 
-    override fun random() = SymmetricKeyImpl(Unicrypto.randomBytes(32),Unicrypto.randomBytes(32))
+    override fun random() = SymmetricKeyImpl(BytesId.random(),Unicrypto.randomBytes(32))
 
 }
 
+actual suspend fun HashAlgorithm.digest(source: ByteArray): ByteArray
+        = Unicrypto.SHA.getDigest(this.toUniversa(), source).await()

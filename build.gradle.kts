@@ -57,7 +57,7 @@ kotlin {
         }
         val jvmMain by getting {
             dependencies {
-                implementation("com.icodici:universa_core:3.14.3")
+                implementation("com.icodici:crypto:3.14.6")
             }
         }
         val jvmTest by getting

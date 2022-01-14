@@ -37,11 +37,6 @@ class KeyIdTests {
             assertEquals(k1.id, ki1)
             val kr1 = ki1.deriveKey(password)
             assertTrue { kr1.etaDecrypt(x1) contentEquals data}
-
-            println("000;jkfhlkjghlkjhlkjhlkjhlkjhlkjhljhlkjhl")
-            println("000;jkfhlkjghlkjhlkjhlkjhlkjhlkjhljhlkjhl")
-            println("000;jkfhlkjghlkjhlkjhlkjhlkjhlkjhljhlkjhl")
-            println("000;jkfhlkjghlkjhlkjhlkjhlkjhlkjhljhlkjhl")
         }
     }
 }

@@ -60,6 +60,14 @@ class BytesId(override val id: ByteArray) : KeyIdentity() {
     }
 }
 
+/**
+ * Key identity that holds data necessary to derive a key from password using PBKDF2 algotithm.
+ * Since it is serializable, it is easy to store PasswordID instance together with encrypted data
+ * to be able later to decrypt it using a used-supplied password.
+ *
+ * Note that unikrypto suggest one password to prduce many cryptographically independent keys,
+ * so the information specifying key position in generated data is inclued.
+ */
 @Suppress("unused")
 @Serializable
 @SerialName("PasswordId")
@@ -72,9 +80,19 @@ class PasswordId(
     val generatedLength: Int,
     val seed: ByteArray
 ) : KeyIdentity() {
-
+    /**
+     * Derive aend check a key in an effective way (e.g. caching PBKDF2 outputs for corresponding keys). Derived
+     * key is always checked against the derived ID, so of the password is wrong, [InvalidPasswordError] will be
+     * thrown.
+     */
+    suspend fun deriveKey(password: String): SymmetricKey =
+        Passwords.Generator.generateKey(password, this)
 }
 
+/**
+ * This method is not intended to be called directly, isntad, use [Passwords.deriveKeys] amd
+ * [PasswordId.deriveKey]
+ */
 expect suspend fun PerformPBKDF2(
     password: String,
     size: Int,

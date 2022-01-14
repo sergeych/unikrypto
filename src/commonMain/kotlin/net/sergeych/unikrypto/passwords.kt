@@ -6,14 +6,6 @@ import kotlinx.coroutines.sync.withLock
 import kotlin.math.log2
 import kotlin.random.Random
 
-/**
- * Derive aend check a key in an effective way (e.g. caching PBKDF2 outputs for corresponding keys). Derived
- * key is always checked against the derived ID, so of the password is wrong, [InvalidPasswordError] will be
- * thrown.
- */
-suspend fun PasswordId.deriveKey(password: String): SymmetricKey =
-    Passwords.Generator.generateKey(password, this)
-
 object Passwords {
 
     private class CharacterClass(source: String) {
@@ -70,6 +62,9 @@ object Passwords {
     /**
      * Derive several cryptographically strong and independent keys from the same password (assuming the password is strong).
      * Important! Do not change default value of [keyIdAlgorithm] unless you exactly know you need it.
+     *
+     * The derived PBKDF data is always 32 bytes longer that requested key space, last 32 bytes are used to
+     * produce secure key ids (depending on `keyIdAlgorithm`, directly or independently for each key).
      */
     suspend fun deriveKeys(
         password: String,
@@ -82,6 +77,10 @@ object Passwords {
         Generator.generate(password, amount, salt, algorithm, rounds, keyIdAlgorithm)
 
 
+    /**
+     * PBKDF generated spaces are cached in memory; to enforce more security against spectr-type cache attacks
+     * it is a good idea to clear the cache when not needed.
+     */
     @Suppress("unused")
     suspend fun clearPasswordsCache() {
         Generator.clearCache()
@@ -115,8 +114,16 @@ object Passwords {
             val amount = (rawBytes.size - 32) / 32
             var offset = 0
             return (0 until amount).map {
-                buildKey(offset, 32, idAlgorithm).also { offset+=32 }
+                buildKey(offset, 32, idAlgorithm).also { offset += 32 }
             }
+        }
+
+        /**
+         * Fill the data with randoms. Use it only when ths instance will never be used again as a bait
+         * for key-stealer specter-like attacks.
+         */
+        private fun clear() {
+            Random.nextBytes(rawBytes)
         }
 
         companion object {
@@ -124,10 +131,20 @@ object Passwords {
             private val cache = mutableMapOf<String, Deferred<Generator>>()
             private val access = Mutex()
 
+            /**
+             * Clears the generated PBKDF space cache. Next PBKDF will guarateed to fire slow generation
+             * again. Data are wiped with some care.
+             */
             suspend fun clearCache() {
-                access.withLock { cache.clear() }
+                access.withLock {
+                    for (g in cache.values) g.await().clear()
+                    cache.clear()
+                }
             }
 
+            /**
+             * Generage a single key from possibly multikey PBKDF space
+             */
             suspend fun generateKey(password: String, passwordId: PasswordId) = generator(
                 password,
                 passwordId.generatedLength,

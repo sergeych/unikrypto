@@ -11,8 +11,7 @@ class KeyIdTests {
             val password = "foobar"
             val data = "fucked up beyond all recognition".encodeToByteArray()
             val (k1, k2) = Passwords.deriveKeys(password,2, 100000)
-            println(k1.id)
-            println(k2.id)
+            assertEquals(32*3, (k1.id as PasswordId).generatedLength)
             assertTrue { k1.id != k2.id }
             println(k1.keyBytes)
             println(k2.keyBytes)

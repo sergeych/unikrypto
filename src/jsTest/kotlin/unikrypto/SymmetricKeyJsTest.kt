@@ -36,28 +36,4 @@ class SymmetricKeyJsTest {
             assertContentEquals(src, d.toByteArray())
         }
     }
-
-    @Test
-    fun testSymmetricProvider() {
-        return runTest {
-            val src = "Foo-42"
-            val k = SymmetricKeys.random()
-            println(k.id)
-            val src2 = k.etaDecryptToString(k.etaEncrypt(src))
-            assertEquals(src, src2)
-            val k2 = SymmetricKeys.create(k.packed, k.id)
-            assertTrue { k2.id == k.id }
-            assertEquals(src, k2.etaDecryptToString(k.etaEncrypt(src)))
-        }
-    }
-
-    @Test
-    fun decodeBase64Compact() {
-        for (x in 1..34) {
-            val a = Random.Default.nextBytes(x)
-            val z = a.encodeToBase64Compact()
-            assertContentEquals(a, z.decodeBase64Compact())
-        }
-    }
-
 }

@@ -13,6 +13,7 @@ fun Uint8Array.toByteArray(): ByteArray {
     for( i in 0 until length)
         result[i] = this.get(i)
     return result
+//    return this.unsafeCast<ByteArray>()
 }
 
 fun ArrayBuffer?.toByteArray(): ByteArray? = this?.run { Uint8Array(this).toByteArray() }

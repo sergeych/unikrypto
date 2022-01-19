@@ -25,18 +25,4 @@ class HashesJsTest {
             assertEquals(vectors[0].hex, HashAlgorithm.SHA256.digest(src).encodeToHex())
         }
     }
-
-    @Test
-    fun pbkdf2Test() {
-        return runTest {
-            val password = "foobar"
-            val (k1, k2) = Passwords.deriveKeys(password, 2, 10000)
-            println(k1.id)
-            println(k2.id)
-            assertTrue { k1.id != k2.id }
-            println(k1.keyBytes)
-            println(k2.keyBytes)
-            assertFalse { k1.keyBytes contentEquals k2.keyBytes }
-        }
-    }
 }

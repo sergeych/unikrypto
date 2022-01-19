@@ -47,7 +47,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
-                implementation("net.sergeych:boss-serialization-mp:0.0.2-SNAPSHOT")
+                implementation("net.sergeych:boss-serialization-mp:0.1.1-SNAPSHOT")
             }
         }
         val commonTest by getting {

@@ -93,10 +93,6 @@ object Passwords {
         val rounds: Int
     ) {
 
-        init {
-            println("generate over $rawBytes")
-        }
-
         val idPart = rawBytes.sliceArray((rawBytes.size - 32) until rawBytes.size)
 
         fun buildKey(

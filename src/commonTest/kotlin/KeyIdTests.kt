@@ -8,10 +8,7 @@ import net.sergeych.unikrypto.KeyIdentity
 import net.sergeych.unikrypto.PasswordId
 import net.sergeych.unikrypto.Passwords
 import kotlin.random.Random
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class KeyIdTests {
 
@@ -44,26 +41,26 @@ class KeyIdTests {
             val (k1, k2) = Passwords.deriveKeys(password,2, 10000)
             assertEquals(32*3, (k1.id as PasswordId).generatedLength)
             assertTrue { k1.id != k2.id }
-            println(k1.keyBytes)
-            println(k2.keyBytes)
+//            println(k1.keyBytes)
+//            println(k2.keyBytes)
             assertFalse { k1.keyBytes contentEquals  k2.keyBytes }
 
-//            val x1 = k1.etaEncrypt(data)
-//            val x2 = k2.etaEncrypt(data)
-//            assertTrue { k1.etaDecrypt(x1) contentEquals data}
-//            assertTrue { k2.etaDecrypt(x2) contentEquals data}
-//            assertFails { k1.etaDecrypt(x2) }
-//
-//            val kx2 = (k2.id as PasswordId).deriveKey(password)
-//            val kx1 = (k1.id as PasswordId).deriveKey(password)
-//            assertEquals(k2.id, kx2.id)
-//            assertEquals(k1.id, kx1.id)
-//            assertTrue { kx1.etaDecrypt(x1) contentEquals data}
-//            assertTrue { kx2.etaDecrypt(x2) contentEquals data}
-//            assertFails { kx1.etaDecrypt(x2) }
-//
-//            val ki1 = BossEncoder.encode(k1.id).decodeBoss<KeyIdentity>()
-//
+            val x1 = k1.etaEncrypt(data)
+            val x2 = k2.etaEncrypt(data)
+            assertTrue { k1.etaDecrypt(x1) contentEquals data}
+            assertTrue { k2.etaDecrypt(x2) contentEquals data}
+            assertFails { k1.etaDecrypt(x2) }
+
+            val kx2 = (k2.id as PasswordId).deriveKey(password)
+            val kx1 = (k1.id as PasswordId).deriveKey(password)
+            assertEquals(k2.id, kx2.id)
+            assertEquals(k1.id, kx1.id)
+            assertTrue { kx1.etaDecrypt(x1) contentEquals data}
+            assertTrue { kx2.etaDecrypt(x2) contentEquals data}
+            assertFails { kx1.etaDecrypt(x2) }
+
+            val ki1 = BossEncoder.encode(k1.id).decodeBoss<KeyIdentity>()
+
 //            println("\n\n K1: ${k1}")
 //            println("\n\n   : ${k1.id.id} ${k1.id.id is ByteArray}")
 //            println("\n\n   : ${ki1.id} ${ki1.id is ByteArray}")
@@ -77,13 +74,13 @@ class KeyIdTests {
 //            println("\n\n   : ${x.seed} ${y.seed}")
 //            println("\n\n   = ${x == y} ${y == x}")
 
-//            val e = BossEncoder.encode(k1.id)
+            val e = BossEncoder.encode(k1.id)
 //            println("\n\n${e.toDump()}")
 
-//            assertIs<PasswordId>(ki1)
-//            assertEquals(k1.id, ki1)
-//            val kr1 = ki1.deriveKey(password)
-//            assertTrue { kr1.etaDecrypt(x1) contentEquals data}
+            assertIs<PasswordId>(ki1)
+            assertEquals(k1.id, ki1)
+            val kr1 = ki1.deriveKey(password)
+            assertTrue { kr1.etaDecrypt(x1) contentEquals data}
         }
 
     }

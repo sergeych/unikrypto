@@ -18,12 +18,12 @@ internal class PublicKeyImpl(private val key: com.icodici.crypto.PublicKey) :
 
     override val bitStrength: Int = key.bitStrength
 
-    override suspend fun encryptBlock(plaintext: ByteArray): ByteArray = key.encrypt(plaintext)
+    override fun encryptBlock(plaintext: ByteArray): ByteArray = key.encrypt(plaintext)
 
-    override suspend fun checkSignature(data: ByteArray, signature: ByteArray, hashAlgorithm: HashAlgorithm): Boolean =
+    override fun checkSignature(data: ByteArray, signature: ByteArray, hashAlgorithm: HashAlgorithm): Boolean =
         key.verify(data, signature, hashAlgorithm.toUnicrypto())
 
-    override suspend fun pack(): ByteArray = key.pack()
+    override val packed: ByteArray by lazy { key.pack() }
 }
 
 internal class PrivateKeyImpl(private val key: com.icodici.crypto.PrivateKey) :
@@ -33,11 +33,11 @@ internal class PrivateKeyImpl(private val key: com.icodici.crypto.PrivateKey) :
 
     override val publicKey by lazy { PublicKeyImpl(key.publicKey) }
 
-    override suspend fun decryptBlock(ciphertext: ByteArray): ByteArray = key.decrypt(ciphertext)
+    override fun decryptBlock(ciphertext: ByteArray): ByteArray = key.decrypt(ciphertext)
 
-    override suspend fun pack(): ByteArray = key.pack()
+    override val packed: ByteArray by lazy { key.pack() }
 
-    override suspend fun sign(data: ByteArray, hashAlgorithm: HashAlgorithm): ByteArray =
+    override fun sign(data: ByteArray, hashAlgorithm: HashAlgorithm): ByteArray =
         key.sign(data, hashAlgorithm.toUnicrypto())
 }
 
@@ -45,7 +45,7 @@ actual val AsymmetricKeys: AsymmetricKeysProvider = object : AsymmetricKeysProvi
 
     override suspend fun generate(bitStrength: Int): PrivateKey = PrivateKeyImpl(com.icodici.crypto.PrivateKey(bitStrength))
 
-    override suspend fun unpackPublic(data: ByteArray): PublicKey = PublicKeyImpl(com.icodici.crypto.PublicKey(data))
+    override fun unpackPublic(data: ByteArray): PublicKey = PublicKeyImpl(com.icodici.crypto.PublicKey(data))
 
-    override suspend fun unpackPrivate(data: ByteArray): PrivateKey = PrivateKeyImpl(com.icodici.crypto.PrivateKey(data))
+    override fun unpackPrivate(data: ByteArray): PrivateKey = PrivateKeyImpl(com.icodici.crypto.PrivateKey(data))
 }

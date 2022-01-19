@@ -76,9 +76,10 @@ class PasswordId(
     val hashAlgorithm: HashAlgorithm,
     val rounds: Int,
     val keyLength: Int,
-    val keyOffseet: Int,
+    val keyOffset: Int,
     val generatedLength: Int,
-    val seed: ByteArray
+    val seed: ByteArray,
+    val keyIdAlgorithm: Passwords.KeyIdAlgorithm = Passwords.KeyIdAlgorithm.Independent
 ) : KeyIdentity() {
     /**
      * Derive aend check a key in an effective way (e.g. caching PBKDF2 outputs for corresponding keys). Derived
@@ -87,6 +88,40 @@ class PasswordId(
      */
     suspend fun deriveKey(password: String): SymmetricKey =
         Passwords.Generator.generateKey(password, this)
+
+    /**
+     * Older password keys, [[Passwords.KeyIdAlgorithm.MyoCloud]], purposedly uses dependent ids on password key bunches,
+     * for that reason we provide custom equality and strongly recommend to use passwordId as left part of the identity
+     * operator expression. Newer keys uses independent ids, which is slower, but in some minor cases provide more
+     * problematic cryptanalysis on encrypted data usage. Still, both key algorithms are equally strong against
+     * data disclosure.
+     *
+     * Note that by default new ID algorithm is used and default serialization format deneds from myocloud.1 API.
+     */
+    override fun equals(other: Any?): Boolean {
+        if( other is PasswordId ) {
+            if(keyIdAlgorithm != Passwords.KeyIdAlgorithm.Independent ||
+                other.keyIdAlgorithm != Passwords.KeyIdAlgorithm.Independent) {
+                return id contentEquals other.id && generatedLength == other.generatedLength &&
+                        keyLength == other.keyLength && keyOffset == other.keyOffset &&
+                        seed contentEquals other.seed
+            }
+        }
+        return super.equals(other)
+    }
+
+    override fun hashCode(): Int {
+        var result = super.hashCode()
+        result = 31 * result + id.contentHashCode()
+        result = 31 * result + hashAlgorithm.hashCode()
+        result = 31 * result + rounds
+        result = 31 * result + keyLength
+        result = 31 * result + keyOffset
+        result = 31 * result + generatedLength
+        result = 31 * result + seed.contentHashCode()
+        result = 31 * result + keyIdAlgorithm.hashCode()
+        return result
+    }
 }
 
 /**

@@ -85,7 +85,7 @@ class SignedRecord private constructor(
             return Bossk.pack(
                 arrayOf(
                     recordType.code,
-                    key.publicKey.pack(),
+                    key.publicKey.packed,
                     key.sign(data, recordType.hashAlgorithm),
                     data
                 )

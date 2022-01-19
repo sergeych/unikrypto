@@ -1,9 +1,11 @@
 package net.sergeych.unikrypto
 
+import kotlinx.coroutines.await
 import org.khronos.webgl.Uint8Array
 import kotlin.js.Promise
 
-data class SymmetricKeyParams(val keyBytes: ByteArray)
+data class SymmetricKeyParams(val keyBytes: Uint8Array)
+
 data class PrivateKeyParams(val strength: Int)
 
 data class SigningOptions(
@@ -23,7 +25,7 @@ data class PBKDF2Params(
     val rounds: Int,
     val keyLength: Int,
     val password: String,
-    val salt: ByteArray
+    val salt: Uint8Array
 )
 
 @JsModule("unicrypto")
@@ -31,64 +33,74 @@ data class PBKDF2Params(
 external class Unicrypto {
 
     object SHA {
-        fun getDigest(name: String, source: ByteArray): Promise<ByteArray>
+        fun getDigestSync(name: String, source: ByteArray): Uint8Array
     }
 
     companion object {
-        fun randomBytes(size: Int): ByteArray
+        fun randomBytes(size: Int): Uint8Array
         fun encode64(data: ByteArray): String
-        fun decode64(text: String): ByteArray
-        fun pbkdf2(hashAlgoritmName: String, params: PBKDF2Params): Promise<ByteArray>
+        fun decode64(text: String): Uint8Array
+        fun pbkdf2(hashAlgoritmName: String, params: PBKDF2Params): Promise<Uint8Array>
+
+        val unicryptoReady: Promise<Unit>
     }
 
     class SymmetricKey(params: SymmetricKeyParams = definedExternally) {
-        suspend fun etaEncrypt(plaintext: ByteArray): Promise<ByteArray>
-        suspend fun etaDecrypt(ciphertext: ByteArray): Promise<ByteArray>
-        fun pack(): ByteArray
+        fun etaEncryptSync(plaintext: Uint8Array): Uint8Array
+        fun etaDecryptSync(ciphertext: Uint8Array): Uint8Array
+        fun pack(): Uint8Array
     }
 
     @Suppress("unused")
     class PublicKey {
-        fun verify(message: ByteArray, signature: ByteArray, options: SigningOptions): Promise<Boolean>
-        fun encrypt(plaintext: ByteArray, options: OAEPOptions): Promise<ByteArray>
+        fun verifySync(message: ByteArray, signature: ByteArray, options: SigningOptions): Boolean
+        fun encryptSync(plaintext: ByteArray, options: OAEPOptions): Uint8Array
 
         fun getBitStrength(): Int
 
-        suspend fun pack(): Promise<ByteArray>
+        val packed: Uint8Array
 
         val longAddress: KeyAddress
         val shortAddress: KeyAddress
 
         companion object {
-            fun unpack(packed: ByteArray): Promise<PublicKey>
+            fun unpackSync(packed: ByteArray): PublicKey
         }
 
     }
 
     class PrivateKey {
 
-        fun sign(message: ByteArray, options: SigningOptions): Promise<ByteArray>
-        fun decrypt(ciphertext: ByteArray, options: OAEPOptions): Promise<ByteArray>
+        fun signSync(message: ByteArray, options: SigningOptions): Uint8Array
+        fun decryptSync(ciphertext: ByteArray, options: OAEPOptions): Uint8Array
 
         val publicKey: PublicKey
 
-        suspend fun pack(): Promise<ByteArray>
+        fun packSync(): ByteArray
 
         companion object {
             suspend fun generate(params: PrivateKeyParams): Promise<PrivateKey>
-            suspend fun unpack(packed: dynamic, dummy: dynamic = definedExternally): Promise<PrivateKey>
+            fun unpackSync(packed: dynamic, dummy: dynamic = definedExternally): PrivateKey
         }
     }
 
     @Suppress("unused")
     class KeyAddress {
 
-        val asBinary: ByteArray
+        val asBinary: Uint8Array
         val asString: String
 
         fun isMatchingKey(k: PublicKey): Boolean
         fun isMatchingKey(k: PrivateKey): Boolean
     }
+}
 
+@Suppress("unused")
+suspend fun InitUnicrypto() {
+    Unicrypto.unicryptoReady.await()
+}
 
+suspend fun <T>withUnicrypto(block: suspend ()->T): T {
+    Unicrypto.unicryptoReady.await()
+    return block()
 }

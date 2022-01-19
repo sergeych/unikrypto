@@ -14,5 +14,6 @@ actual suspend fun PerformPBKDF2(
         rounds,
         size,
         password,
-        salt
-    )).await()
+        salt.toUint8Array()
+    )
+).await().toByteArray()

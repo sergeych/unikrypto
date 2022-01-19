@@ -93,9 +93,13 @@ object Passwords {
         val rounds: Int
     ) {
 
+        init {
+            println("generate over $rawBytes")
+        }
+
         val idPart = rawBytes.sliceArray((rawBytes.size - 32) until rawBytes.size)
 
-        suspend fun buildKey(
+        fun buildKey(
             from: Int, length: Int,
             idAlgorithm: KeyIdAlgorithm = KeyIdAlgorithm.Independent
         ): SymmetricKey {
@@ -106,7 +110,7 @@ object Passwords {
             }
             return SymmetricKeys.create(
                 rawBytes.sliceArray(from until (from + length)),
-                PasswordId(idBytes, hashAlgorithm, rounds, length, from, rawBytes.size, seed)
+                PasswordId(idBytes, hashAlgorithm, rounds, length, from, rawBytes.size, seed, idAlgorithm)
             )
         }
 
@@ -151,7 +155,7 @@ object Passwords {
                 passwordId.hashAlgorithm,
                 passwordId.rounds,
                 passwordId.seed
-            ).buildKey(passwordId.keyOffseet, passwordId.keyLength)
+            ).buildKey(passwordId.keyOffset, passwordId.keyLength)
 
             suspend fun generate(
                 password: String,

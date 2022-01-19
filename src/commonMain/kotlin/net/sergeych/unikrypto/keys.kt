@@ -1,5 +1,11 @@
 package net.sergeych.unikrypto
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlin.random.Random
 
 /**
@@ -16,9 +22,9 @@ enum class HashAlgorithm {
     // "sha256" | "sha384" | "sha512" | "sha512/256" | "sha3_256" | "sha3_384" | "sha3_512";
 }
 
-expect suspend fun HashAlgorithm.digest(source: ByteArray): ByteArray
+expect fun HashAlgorithm.digest(source: ByteArray): ByteArray
 
-suspend fun HashAlgorithm.digest(text: String): ByteArray = digest(text.encodeToByteArray())
+fun HashAlgorithm.digest(text: String): ByteArray = digest(text.encodeToByteArray())
 
 /**
  * Universa MP key. It _has an identity_ and could be packed to binary
@@ -37,7 +43,7 @@ interface IdentifiableKey {
     /**
      * Pack to binary form without applying passwords, etc.
      */
-    suspend fun pack(): ByteArray
+    val packed: ByteArray
 }
 
 /**
@@ -49,11 +55,11 @@ interface EncryptingKey: IdentifiableKey {
      * detected and reported. The EtA algorithm does not reduce strength of the encryption not allowing
      * making any assumptions on the used key.
      */
-    suspend fun etaEncrypt(plaintext: ByteArray): ByteArray = throw OperationNotSupported()
+    fun etaEncrypt(plaintext: ByteArray): ByteArray = throw OperationNotSupported()
     /**
      * Encrypt then authenticate string data using utf-8 format.
      */
-    suspend fun etaEncrypt(plaintext: String): ByteArray = etaEncrypt(plaintext.encodeToByteArray())
+    fun etaEncrypt(plaintext: String): ByteArray = etaEncrypt(plaintext.encodeToByteArray())
 }
 
 /**
@@ -65,13 +71,13 @@ interface DecryptingKey: IdentifiableKey {
      * Decrypt the data using incorporated authenticity (EtA algorithm). It means, that id the key is wrong or the
      * encrypted data were tampered, decryption will fail with exception.
      */
-    suspend fun etaDecrypt(ciphertext: ByteArray): ByteArray = throw OperationNotSupported()
+    fun etaDecrypt(ciphertext: ByteArray): ByteArray = throw OperationNotSupported()
 
     /**
      * Decrypt the text data using utf-8 encoding and check the authenticity. If the key is wrong or encrypted data
      * was modified, throws an exception.
      */
-    suspend fun etaDecryptToString(ciphertext: ByteArray): String = etaDecrypt(ciphertext).decodeToString()
+    fun etaDecryptToString(ciphertext: ByteArray): String = etaDecrypt(ciphertext).decodeToString()
 }
 
 /**
@@ -81,13 +87,13 @@ interface SigningKey: IdentifiableKey {
     /**
      * Sign arbitrary data with this key.
      */
-    suspend fun sign(data: ByteArray, hashAlgorithm: HashAlgorithm = HashAlgorithm.SHA3_384): ByteArray =
+    fun sign(data: ByteArray, hashAlgorithm: HashAlgorithm = HashAlgorithm.SHA3_384): ByteArray =
         throw OperationNotSupported()
 
     /**
      * Sign text data with this key using utf-8 encoding
      */
-    suspend fun sign(text: String,hashAlgorithm: HashAlgorithm = HashAlgorithm.SHA3_384): ByteArray
+    fun sign(text: String,hashAlgorithm: HashAlgorithm = HashAlgorithm.SHA3_384): ByteArray
             = sign(text.encodeToByteArray(), hashAlgorithm)
 
     val publicKey: VerifyingKey
@@ -100,7 +106,7 @@ interface VerifyingKey: IdentifiableKey {
     /**
      * Check the signature of binary data. Note that hash algorithm should be the same as used when signing.
      */
-    suspend fun checkSignature(
+    fun checkSignature(
         data: ByteArray,
         signature: ByteArray,
         hashAlgorithm: HashAlgorithm = HashAlgorithm.SHA3_384
@@ -110,7 +116,7 @@ interface VerifyingKey: IdentifiableKey {
      * Check the signature of the text that was encoded with utf-8. Note that hash algorithm should be the same as
      * used when signing.
      */
-    suspend fun checkSignature(
+    fun checkSignature(
         text: String,
         signature: ByteArray,
         hashAlgorithm: HashAlgorithm = HashAlgorithm.SHA3_384
@@ -174,7 +180,7 @@ abstract class PublicKey: EncryptingKey, VerifyingKey  {
     /**
      * Implement block encryption (slow). Result should be exactly [minimumEncryptedSize] in length.
      */
-    protected abstract suspend fun encryptBlock(plaintext: ByteArray): ByteArray
+    protected abstract fun encryptBlock(plaintext: ByteArray): ByteArray
 
     /**
      * Encrypt data of any length uses compatible size extension algorithm. If the plaintext fits the single block,
@@ -184,10 +190,10 @@ abstract class PublicKey: EncryptingKey, VerifyingKey  {
      * rest part of the message simply follows the encrypted block. This method conserves space and preserves
      * compatibility with most old unicrypto-related formats.
      */
-    override suspend fun etaEncrypt(plaintext: ByteArray): ByteArray {
+    override fun etaEncrypt(plaintext: ByteArray): ByteArray {
         if( plaintext.size <= maxMessageSize ) return encryptBlock(plaintext)
         val k = SymmetricKeys.random()
-        val encodedMessage = k.pack() + k.etaEncrypt(plaintext)
+        val encodedMessage = k.packed + k.etaEncrypt(plaintext)
 
         val part1 = encodedMessage.sliceArray(0 until maxMessageSize )
         val part2 = encodedMessage.sliceArray( maxMessageSize until encodedMessage.size)
@@ -208,13 +214,13 @@ abstract class PrivateKey: DecryptingKey, SigningKey  {
      * Platform-specific method to decrypt a block. The block size should be `publicKey.minimumEncryptedSize` exactly.
      * [etaDecrypt] implementation uses it to decrypt long and short data simultaneously.
      */
-    protected abstract suspend fun decryptBlock(ciphertext: ByteArray): ByteArray
+    protected abstract fun decryptBlock(ciphertext: ByteArray): ByteArray
 
     /**
      * Decrypt data of any size. Short data are just encrypted in the only block of the asymmetric algorithms, long
      * data is decrypted from encrypted message, as described in [PublicKey.etaEncrypt], see details there.
      */
-    override suspend fun etaDecrypt(ciphertext: ByteArray): ByteArray {
+    override fun etaDecrypt(ciphertext: ByteArray): ByteArray {
         val puk = publicKey
         if( ciphertext.size < puk.minimumEncryptedSize )
             throw UnikryptoError("encrypted block is too small: ${ciphertext.size} should be >= ${puk.minimumEncryptedSize}")
@@ -235,12 +241,38 @@ abstract class PrivateKey: DecryptingKey, SigningKey  {
  */
 interface AsymmetricKeysProvider {
     suspend fun generate(bitStrength: Int): PrivateKey
-    suspend fun unpackPublic(data: ByteArray): PublicKey
-    suspend fun unpackPrivate(data: ByteArray): PrivateKey
+    fun unpackPublic(data: ByteArray): PublicKey
+    fun unpackPrivate(data: ByteArray): PrivateKey
 }
+
+
+@Serializable
+internal data class SerializedIdentifiableKey(
+    val id: KeyIdentity,
+    val type: String,
+    val packed: ByteArray
+)
 
 /**
  * Platform-dependent implementation of asymmetric keys
  */
 expect val AsymmetricKeys: AsymmetricKeysProvider
 
+object IdentifiableKeySerializer : KSerializer<IdentifiableKey> {
+    override fun deserialize(decoder: Decoder): IdentifiableKey {
+        TODO("Not yet implemented")
+    }
+
+    override val descriptor: SerialDescriptor = SerializedIdentifiableKey.serializer().descriptor
+
+    override fun serialize(encoder: Encoder, value: IdentifiableKey) {
+        val type = when(value) {
+            is PublicKey -> "PublicKey"
+            is PrivateKey -> "PrivateKey"
+            else -> throw SerializationException("don't knwo how to serialize key $value")
+        }
+        encoder.encodeSerializableValue(SerializedIdentifiableKey.serializer(),
+            SerializedIdentifiableKey(value.id, type, value.packed))
+    }
+
+}

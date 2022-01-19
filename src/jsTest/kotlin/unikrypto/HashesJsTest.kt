@@ -1,6 +1,5 @@
 package net.sergeych.unikrypto
 
-import kotlinx.coroutines.await
 import runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -21,7 +20,7 @@ class HashesJsTest {
     fun testSha256() {
         return runTest {
             val src = "abc".encodeToByteArray()
-            val hash = Unicrypto.SHA.getDigest("sha256", src).await()
+            val hash = Unicrypto.SHA.getDigestSync("sha256", src).toByteArray()
             assertEquals(vectors[0].hex, hash.encodeToHex())
             assertEquals(vectors[0].hex, HashAlgorithm.SHA256.digest(src).encodeToHex())
         }

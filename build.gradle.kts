@@ -64,7 +64,7 @@ kotlin {
         val jsMain by getting {
             dependencies {
                 implementation(npm("unicrypto", "1.12.0"))
-                implementation(npm("copy-webpack-plugin", "10.2.1"))
+                implementation(npm("copy-webpack-plugin", "9.0.0"))
             }
         }
         val jsTest by getting {
@@ -99,5 +99,12 @@ kotlin {
                 }
             }
         }
+    }
+}
+
+afterEvaluate {
+    rootProject.extensions.configure<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension> {
+        versions.webpackDevServer.version = "4.0.0"
+        versions.webpackCli.version = "4.9.0"
     }
 }

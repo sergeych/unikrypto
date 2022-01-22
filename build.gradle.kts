@@ -64,6 +64,7 @@ kotlin {
         val jsMain by getting {
             dependencies {
                 implementation(npm("unicrypto", "1.12.0"))
+                implementation(npm("copy-webpack-plugin", "10.2.1"))
             }
         }
         val jsTest by getting {

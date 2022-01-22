@@ -26,7 +26,17 @@ import kotlin.random.Random
 @Serializable
 sealed class KeyIdentity {
 
+    /**
+     * Base of any id: binary sequence. __it is crucial that it never changes__: even calculated, it should be
+     * the same on every invocation.
+     */
     abstract val id: ByteArray
+
+    /**
+     * JS platform in fact does not allow Map<ByteArray,...> so we provide StringId to keep MP compatibility. This
+     * key should be at least as good as [id].
+     */
+    open val stringId: String by lazy { id.encodeToBase64Compact() }
 
     /**
      * String representation of the identity. Could also be used to compare identity for matching.
@@ -108,6 +118,14 @@ class PasswordId(
             }
         }
         return super.equals(other)
+    }
+
+    /**
+     * complete data on identity. Actually it is possible to restore [PasswordId] and regenerate key from password
+     * from parsing this string.
+     */
+    override val stringId: String by lazy {
+        "${super.stringId}:${seed.encodeToBase64Compact()}:$keyOffset:$keyLength:$generatedLength:$rounds${hashAlgorithm.name}"
     }
 
     override fun hashCode(): Int {

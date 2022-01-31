@@ -4,10 +4,13 @@ import kotlinx.coroutines.await
 import org.khronos.webgl.Uint8Array
 import kotlin.js.Promise
 
+@JsExport
 data class SymmetricKeyParams(val keyBytes: Uint8Array)
 
+@JsExport
 data class PrivateKeyParams(val strength: Int)
 
+@JsExport
 data class SigningOptions(
     val salt: ByteArray? = null,
     val salLength: Int? = null,
@@ -15,12 +18,14 @@ data class SigningOptions(
     val pssHash: String = "sha3_384"
 )
 
+@JsExport
 data class OAEPOptions(
     val seed: Uint8Array? = null, // optional, default none
     val mgf1Hash: String? = null,
     val oaepHash: String? = null
 )
 
+@JsExport
 data class PBKDF2Params(
     val rounds: Int,
     val keyLength: Int,

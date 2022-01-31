@@ -2,7 +2,7 @@ package net.sergeych.unikrypto
 
 class SymmetricKeyImpl(id: KeyIdentity, override val keyBytes: ByteArray): SymmetricKey(id) {
 
-    private val key = Unicrypto.SymmetricKey(SymmetricKeyParams(keyBytes.toUint8Array()))
+    val key = Unicrypto.SymmetricKey(SymmetricKeyParams(keyBytes.toUint8Array()))
 
     override fun etaEncrypt(plaintext: ByteArray): ByteArray = key.etaEncryptSync(plaintext.toUint8Array()).toByteArray()
 
@@ -18,8 +18,7 @@ class SymmetricKeyImpl(id: KeyIdentity, override val keyBytes: ByteArray): Symme
 actual val SymmetricKeys: SymmetricKeyProvider = object : SymmetricKeyProvider {
     override val keySizes = arrayOf(32)
 
-    override fun create(keyBytes: ByteArray,id: KeyIdentity): SymmetricKey =
-        SymmetricKeyImpl(id, keyBytes)
+    override fun create(keyBytes: ByteArray,id: KeyIdentity): SymmetricKey = SymmetricKeyImpl(id, keyBytes)
 
     override fun random() = SymmetricKeyImpl(BytesId.random(),Unicrypto.randomBytes(32).toByteArray())
 

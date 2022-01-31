@@ -1,5 +1,6 @@
 package net.sergeych.unikrypto
 
+import net.sergeych.mptools.decodeHex
 import runTest
 import kotlin.random.Random
 import kotlin.test.Test
@@ -25,6 +26,20 @@ class SymmetricKeyJsTest {
             println("\n\n${d1.decodeToString()}\n")
         }
     }
+
+//    @Test
+//    fun testCreation() {
+//        val s1 = "000102030405060708090a0b0c0d0e0f".decodeHex()
+//        val s = s1 + s1
+//        val k1 = Unicrypto.SymmetricKey(SymmetricKeyParams(s.toUint8Array()))//(s, BytesId.random())
+//        val k2 = Unicrypto.SymmetricKey(SymmetricKeyParams(s.toUint8Array()))//(s, BytesId.random())
+//        println("\n\n:: ${s.encodeToHex()}")
+//        println("\n\n:: ${s.toUint8Array().toByteArray().encodeToHex()}")
+//        println("\n\n:: ${k1.pack().toByteArray().encodeToHex()}")
+//        println("\n\n:: ${k1.pack().toByteArray().encodeToHex()}")
+//        println("\n\n:: ${k2.pack().toByteArray().encodeToHex()}")
+//        println("\n\n:: ${k2.pack().toByteArray().encodeToHex()}")
+//    }
 
     @Test
     fun testSymmetricKeyCreation() {

@@ -12,6 +12,12 @@ repositories {
     maven("https://maven.universablockchain.com")
 }
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions {
+        freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+    }
+}
+
 kotlin {
     jvm {
         compilations.all {
@@ -22,7 +28,7 @@ kotlin {
             useJUnitPlatform()
         }
     }
-    js(BOTH) {
+    js(IR) {
         browser {
 //            commonWebpackConfig {
 //                cssSupport.enabled = true
@@ -48,6 +54,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
                 implementation("net.sergeych:boss-serialization-mp:0.1.1-SNAPSHOT")
+                implementation("net.sergeych:mp_stools:1.0.0-SNAPSHOT")
             }
         }
         val commonTest by getting {

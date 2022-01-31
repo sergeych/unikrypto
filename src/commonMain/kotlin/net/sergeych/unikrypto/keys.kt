@@ -6,6 +6,7 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import net.sergeych.bossk.FormatException
 import kotlin.random.Random
 
 /**
@@ -31,6 +32,21 @@ fun HashAlgorithm.digest(text: String): ByteArray = digest(text.encodeToByteArra
  * representation. Any particular key though implements some of [EncryptingKey], [DecryptingKey],
  * [SigningKey] and [VerifyingKey] interfaces. Use the needed interface instead of archetypes
  * like [PublicKey] wherever possible.
+ *
+ * __Note on serialization__. Because of some complications of kollinx serialization and openedness of the
+ * keys system, it is necessary to declare serializer to each IdentifiableKey (or descenfants) properties,
+ * it must look like:
+ * ```kotlin
+ * @Serializable
+ * data class KeyEntry(
+ *
+ *     @Serializable(with = IdentifiableKeySerializer::class)
+ *     val key: IdentifiableKey,
+ *
+ *     val tags: MutableList<String> = mutableListOf(),
+ *     var comment: String? = null
+ * )
+ * ```
  */
 interface IdentifiableKey {
     /**
@@ -122,7 +138,6 @@ interface VerifyingKey: IdentifiableKey {
         hashAlgorithm: HashAlgorithm = HashAlgorithm.SHA3_384
     ): Boolean = checkSignature(text.encodeToByteArray(), signature, hashAlgorithm)
 }
-
 /**
  * Symmetric key is one that can encrypt and decrypt data, but can not sign or verify signatures.
  * It uses simple equality-based independent IDs not derivable from the key (but possibly derivable from password
@@ -247,8 +262,8 @@ interface AsymmetricKeysProvider {
 
 
 @Serializable
-internal data class SerializedIdentifiableKey(
-    val id: KeyIdentity,
+internal data class IdentifiableKeySurrogate(
+    val id: KeyIdentity? = null,
     val type: String,
     val packed: ByteArray
 )
@@ -260,19 +275,25 @@ expect val AsymmetricKeys: AsymmetricKeysProvider
 
 object IdentifiableKeySerializer : KSerializer<IdentifiableKey> {
     override fun deserialize(decoder: Decoder): IdentifiableKey {
-        TODO("Not yet implemented")
+        val s = decoder.decodeSerializableValue(IdentifiableKeySurrogate.serializer())
+        return when(s.type) {
+            "public" -> AsymmetricKeys.unpackPublic(s.packed)
+            "private" -> AsymmetricKeys.unpackPrivate(s.packed)
+            "symmetric" -> SymmetricKeys.create(s.packed, s.id!!)
+            else -> throw FormatException("unknown key type found")
+        }
     }
 
-    override val descriptor: SerialDescriptor = SerializedIdentifiableKey.serializer().descriptor
+    override val descriptor: SerialDescriptor = IdentifiableKeySurrogate.serializer().descriptor
 
     override fun serialize(encoder: Encoder, value: IdentifiableKey) {
-        val type = when(value) {
-            is PublicKey -> "PublicKey"
-            is PrivateKey -> "PrivateKey"
+        val s = when(value) {
+            is PublicKey -> IdentifiableKeySurrogate(null, "public", value.packed)
+            is PrivateKey -> IdentifiableKeySurrogate(null, "private", value.packed)
+            is SymmetricKey -> IdentifiableKeySurrogate(value.id, "symmetric", value.packed)
             else -> throw SerializationException("don't knwo how to serialize key $value")
         }
-        encoder.encodeSerializableValue(SerializedIdentifiableKey.serializer(),
-            SerializedIdentifiableKey(value.id, type, value.packed))
+        encoder.encodeSerializableValue(IdentifiableKeySurrogate.serializer(),s)
     }
 
 }

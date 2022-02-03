@@ -23,7 +23,7 @@ enum class HashAlgorithm {
     // "sha256" | "sha384" | "sha512" | "sha512/256" | "sha3_256" | "sha3_384" | "sha3_512";
 }
 
-expect fun HashAlgorithm.digest(source: ByteArray): ByteArray
+expect fun HashAlgorithm.digest(vararg source: ByteArray): ByteArray
 
 fun HashAlgorithm.digest(text: String): ByteArray = digest(text.encodeToByteArray())
 
@@ -145,6 +145,15 @@ interface VerifyingKey: IdentifiableKey {
  */
 abstract class SymmetricKey(override val id: KeyIdentity): EncryptingKey, DecryptingKey {
     abstract val keyBytes: ByteArray
+    companion object {
+        @Suppress("unused")
+        fun SymmetricKey(keyBytes: ByteArray, id: KeyIdentity?=null): SymmetricKey =
+            SymmetricKeys.create(keyBytes, id ?: BytesId.random())
+
+        @Suppress("unused")
+        fun SymmetricKey() = SymmetricKeys.random()
+    }
+
 }
 
 /**

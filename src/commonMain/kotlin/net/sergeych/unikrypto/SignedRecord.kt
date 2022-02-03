@@ -68,7 +68,7 @@ class SignedRecord private constructor(
          *                not to use Type.RECORD_2_256 anymore and migrate out from it wherever possible**.
          * @param nonce   optional byte array often used in parsec negotiations
          */
-        suspend inline fun <reified T : Any?> pack(
+        inline fun <reified T : Any?> pack(
             key: SigningKey,
             payload: T,
             nonce: ByteArray? = null,
@@ -93,6 +93,23 @@ class SignedRecord private constructor(
         }
 
         /**
+         * Pack and sign the SignedRecord
+         *
+         * @param key key to sign record with
+         * @param payload any data that the record will cary, should be Boss-compatible (e.g. simple
+         * types including Date and arrays/lists/maps of them). See [Bossk]
+         * @param recordType one of [Type.RECORD_3_384], and other [Type] constants.
+         * @param nonce optional byte array often used in parsec negotiations
+         */
+        suspend fun pack(
+            key: PrivateKey,
+            vararg payload: Pair<String, Any?>,
+            nonce: ByteArray? = null,
+            recordType: Type = Type.default,
+        ): ByteArray = pack(key, BossStruct.from(*payload), nonce, recordType)
+
+
+        /**
          * Unpack signed record optinoally calling preCheck before verifying signature. As the
          * signature verification is a time-consuming process it is often useful to check data for
          * sanity first.
@@ -105,7 +122,7 @@ class SignedRecord private constructor(
          *                 instance, so preCheck can, for example, throw and exception if the data
          *                 are not expected.
          */
-        suspend fun unpack(packed: ByteArray, preCheck: ((SignedRecord) -> Unit)? = null): SignedRecord {
+        fun unpack(packed: ByteArray, preCheck: ((SignedRecord) -> Unit)? = null): SignedRecord {
             val outer = Bossk.unpack<List<Any?>>(packed)
             val recordType = Type.deocde(outer[0] as? Int ?: badFormat())
             val key = AsymmetricKeys.unpackPublic(outer.bytesAt(1) ?: badFormat())

@@ -11,5 +11,8 @@ actual val SymmetricKeys: SymmetricKeyProvider = object : SymmetricKeyProvider {
         SymmetricKeyImpl(BytesId.random(), com.icodici.crypto.SymmetricKey())
 }
 
-actual fun HashAlgorithm.digest(source: ByteArray): ByteArray =
-    this.toUnicrypto().createDigest().digest(source)
+actual fun HashAlgorithm.digest(vararg source: ByteArray): ByteArray {
+    val df = this.toUnicrypto().createDigest()
+    for( s in source) df.update(s)
+    return df.digest()
+}

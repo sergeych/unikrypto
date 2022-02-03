@@ -37,8 +37,15 @@ data class PBKDF2Params(
 @JsNonModule
 external class Unicrypto {
 
-    object SHA {
-        fun getDigestSync(name: String, source: ByteArray): Uint8Array
+    class SHA(hashAlgorithm: String) {
+
+        fun putSync(data: Uint8Array)
+
+        fun digest(): Uint8Array
+
+        companion object {
+            fun getDigestSync(name: String, source: ByteArray): Uint8Array
+        }
     }
 
     companion object {

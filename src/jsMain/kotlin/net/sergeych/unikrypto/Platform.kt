@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalJsExport::class)
+
 package net.sergeych.unikrypto
 
 import kotlinx.coroutines.await
@@ -14,7 +16,7 @@ data class PrivateKeyParams(val strength: Int)
 data class SigningOptions(
     val salt: ByteArray? = null,
     val salLength: Int? = null,
-    val mgf1Hash: String = "sha512",
+    val mgf1Hash: String = "sha1",
     val pssHash: String = "sha3_384"
 )
 
@@ -33,6 +35,7 @@ data class PBKDF2Params(
     val salt: Uint8Array
 )
 
+@Suppress("unused")
 @JsModule("unicrypto")
 @JsNonModule
 external class Unicrypto {
@@ -65,8 +68,9 @@ external class Unicrypto {
 
     @Suppress("unused")
     class PublicKey {
-        fun verifySync(message: ByteArray, signature: ByteArray, options: SigningOptions): Boolean
-        fun encryptSync(plaintext: ByteArray, options: OAEPOptions): Uint8Array
+        fun verifySync(message: Uint8Array, signature: Uint8Array, options: SigningOptions): Boolean
+        fun verify(message: Uint8Array, signature: Uint8Array, options: SigningOptions): Promise<Boolean>
+        fun encryptSync(plaintext: Uint8Array, options: OAEPOptions): Uint8Array
 
         fun getBitStrength(): Int
 
@@ -76,15 +80,16 @@ external class Unicrypto {
         val shortAddress: KeyAddress
 
         companion object {
-            fun unpackSync(packed: ByteArray): PublicKey
+            fun unpackSync(packed: Uint8Array): PublicKey
+            fun unpack(packed: Uint8Array): Promise<PublicKey>
         }
 
     }
 
     class PrivateKey {
 
-        fun signSync(message: ByteArray, options: SigningOptions): Uint8Array
-        fun decryptSync(ciphertext: ByteArray, options: OAEPOptions): Uint8Array
+        fun signSync(message: Uint8Array, options: SigningOptions): Uint8Array
+        fun decryptSync(ciphertext: Uint8Array, options: OAEPOptions): Uint8Array
 
         val publicKey: PublicKey
 

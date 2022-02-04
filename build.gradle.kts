@@ -18,6 +18,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     }
 }
 
+
 kotlin {
     jvm {
         compilations.all {
@@ -30,9 +31,14 @@ kotlin {
     }
     js(IR) {
         browser {
-//            commonWebpackConfig {
+            testTask {
+                useKarma {
+                    useChromeHeadless()
+                }
+            }
+            commonWebpackConfig {
 //                cssSupport.enabled = true
-//            }
+            }
         }
     }
 //    val hostOs = System.getProperty("os.name")
@@ -109,9 +115,9 @@ kotlin {
     }
 }
 
-afterEvaluate {
-    rootProject.extensions.configure<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension> {
-        versions.webpackDevServer.version = "4.0.0"
-        versions.webpackCli.version = "4.9.0"
-    }
-}
+//afterEvaluate {
+//    rootProject.extensions.configure<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension> {
+//        versions.webpackDevServer.version = "4.0.0"
+//        versions.webpackCli.version = "4.9.0"
+//    }
+//}

@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package net.sergeych.unikrypto
 
 import com.icodici.crypto.HashType
@@ -50,5 +52,5 @@ actual val AsymmetricKeys: AsymmetricKeysProvider = object : AsymmetricKeysProvi
     override fun unpackPrivate(data: ByteArray): PrivateKey = PrivateKeyImpl(com.icodici.crypto.PrivateKey(data))
 }
 
-val PrivateKey.universaKey: com.icodici.crypto.PrivateKey get() = (this as PrivateKeyImpl).key
-val PublicKey.universaKey: com.icodici.crypto.PublicKey get() = (this as PublicKeyImpl).key
+val SigningKey.universaKey: com.icodici.crypto.PrivateKey get() = (this as PrivateKeyImpl).key
+val VerifyingKey.universaKey: com.icodici.crypto.PublicKey get() = (this as PublicKeyImpl).key

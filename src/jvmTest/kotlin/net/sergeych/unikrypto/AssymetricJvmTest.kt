@@ -2,10 +2,10 @@ import kotlin.test.Test
 
 class KeySerializationTest {
 
-    @Test
-    fun serialization() {
+//    @Test
+//    fun serialization() {
 
-        return runTest {
+//        return runTest {
 //            val x = com.icodici.crypto.SymmetricKey()
 //            val d = Boss.dump(x)
 //            println(d.toDump())
@@ -16,8 +16,8 @@ class KeySerializationTest {
 //                println("$i ${src.size} ${ct.size}")
 //                assertContentEquals(src, k.etaDecrypt(ct))
 //            }
-        }
-    }
+//        }
+//    }
 
 
 }

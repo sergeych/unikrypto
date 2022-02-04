@@ -11,7 +11,7 @@ fun HashAlgorithm.toUnicrypto(): HashType =
         HashAlgorithm.SHA512 -> HashType.SHA512
     }
 
-internal class PublicKeyImpl(private val key: com.icodici.crypto.PublicKey) :
+internal class PublicKeyImpl(val key: com.icodici.crypto.PublicKey) :
     PublicKey() {
 
     override val id by lazy { BytesId(key.longAddress.packed) }
@@ -26,7 +26,7 @@ internal class PublicKeyImpl(private val key: com.icodici.crypto.PublicKey) :
     override val packed: ByteArray by lazy { key.pack() }
 }
 
-internal class PrivateKeyImpl(private val key: com.icodici.crypto.PrivateKey) :
+internal class PrivateKeyImpl(val key: com.icodici.crypto.PrivateKey) :
     PrivateKey() {
 
     override val id by lazy { BytesId(key.publicKey.longAddress.packed) }
@@ -49,3 +49,6 @@ actual val AsymmetricKeys: AsymmetricKeysProvider = object : AsymmetricKeysProvi
 
     override fun unpackPrivate(data: ByteArray): PrivateKey = PrivateKeyImpl(com.icodici.crypto.PrivateKey(data))
 }
+
+val PrivateKey.universaKey: com.icodici.crypto.PrivateKey get() = (this as PrivateKeyImpl).key
+val PublicKey.universaKey: com.icodici.crypto.PublicKey get() = (this as PublicKeyImpl).key

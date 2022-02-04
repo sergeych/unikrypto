@@ -1,6 +1,6 @@
 package net.sergeych.unikrypto
 
-internal class SymmetricKeyImpl(id: KeyIdentity,private val key: com.icodici.crypto.SymmetricKey): SymmetricKey(id) {
+internal class SymmetricKeyImpl(id: KeyIdentity,val key: com.icodici.crypto.SymmetricKey): SymmetricKey(id) {
 
     override val packed: ByteArray by lazy { key.pack() }
 
@@ -10,3 +10,5 @@ internal class SymmetricKeyImpl(id: KeyIdentity,private val key: com.icodici.cry
 
     override fun etaDecrypt(ciphertext: ByteArray): ByteArray = key.etaDecrypt(ciphertext)
 }
+
+val SymmetricKey.universaKey: com.icodici.crypto.SymmetricKey get() = (this as SymmetricKeyImpl).key

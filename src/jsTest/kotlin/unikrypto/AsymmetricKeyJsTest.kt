@@ -1,5 +1,6 @@
 package net.sergeych.unikrypto
 
+import net.sergeych.mp_tools.decodeBase64
 import runTest
 import kotlin.experimental.xor
 import kotlin.test.Test

@@ -2,6 +2,8 @@ package net.sergeych.unikrypto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import net.sergeych.mp_tools.decodeBase64Compact
+import net.sergeych.mp_tools.encodeToBase64Compact
 import kotlin.random.Random
 
 /**

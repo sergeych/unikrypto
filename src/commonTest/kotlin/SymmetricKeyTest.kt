@@ -2,6 +2,8 @@ package net.sergeych.unikrypto
 
 import net.sergeych.boss_serialization_mp.BossEncoder
 import net.sergeych.boss_serialization_mp.decodeBoss
+import net.sergeych.mp_tools.decodeBase64Compact
+import net.sergeych.mp_tools.encodeToBase64Compact
 import runTest
 import kotlin.random.Random
 import kotlin.test.*

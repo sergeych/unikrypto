@@ -4,6 +4,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import net.sergeych.boss_serialization_mp.BossEncoder
 import net.sergeych.boss_serialization_mp.decodeBoss
+import net.sergeych.mp_tools.decodeBase64Compact
+import net.sergeych.mp_tools.encodeToBase64Compact
 import net.sergeych.mptools.toDump
 import org.junit.jupiter.api.Test
 

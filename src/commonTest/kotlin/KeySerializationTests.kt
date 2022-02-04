@@ -5,6 +5,7 @@ import kotlinx.serialization.UseSerializers
 import net.sergeych.boss_serialization.BossDecoder
 import net.sergeych.boss_serialization_mp.BossEncoder
 import net.sergeych.boss_serialization_mp.decodeBoss
+import net.sergeych.mp_tools.decodeBase64
 import net.sergeych.mptools.decodeHex
 import net.sergeych.mptools.toDump
 import net.sergeych.unikrypto.*

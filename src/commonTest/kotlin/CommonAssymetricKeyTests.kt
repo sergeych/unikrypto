@@ -1,7 +1,8 @@
+import net.sergeych.mp_tools.decodeBase64
+import net.sergeych.mp_tools.encodeToBase64
+import net.sergeych.mp_tools.encodeToBase64Compact
 import net.sergeych.unikrypto.AsymmetricKeys
 import net.sergeych.unikrypto.PrivateKey
-import net.sergeych.unikrypto.decodeBase64
-import net.sergeych.unikrypto.toBase64
 import kotlin.test.*
 
 class CommonAssymetricKeyTests {
@@ -36,7 +37,7 @@ class CommonAssymetricKeyTests {
             assertTrue { k.publicKey.checkSignature(text, k.sign(text)) }
             assertFalse { k.publicKey.checkSignature(text2, k.sign(text)) }
 
-            println(k.packed.toBase64())
+            println(k.packed.encodeToBase64())
         }
     }
 

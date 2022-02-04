@@ -1,3 +1,5 @@
+@file:Suppress("SERIALIZER_TYPE_INCOMPATIBLE")
+
 package net.sergeych.unikrypto
 
 import kotlinx.serialization.KSerializer
@@ -143,6 +145,7 @@ interface VerifyingKey: IdentifiableKey {
  * It uses simple equality-based independent IDs not derivable from the key (but possibly derivable from password
  * but in independent manner)
  */
+@Serializable(with = IdentifiableKeySerializer::class)
 abstract class SymmetricKey(override val id: KeyIdentity): EncryptingKey, DecryptingKey {
     abstract val keyBytes: ByteArray
     companion object {
@@ -174,6 +177,7 @@ expect val SymmetricKeys: SymmetricKeyProvider
  * Public key is a key capable of encrypting and verifying signatures. It has some specific fields that extend these
  * interfaces
  */
+@Serializable(with = IdentifiableKeySerializer::class)
 abstract class PublicKey: EncryptingKey, VerifyingKey  {
 
     /**
@@ -230,6 +234,7 @@ abstract class PublicKey: EncryptingKey, VerifyingKey  {
  * The private key is capable of decrypting and signing. It also has unique ability to provide corresponding
  * public key.
  */
+@Serializable(with = IdentifiableKeySerializer::class)
 abstract class PrivateKey: DecryptingKey, SigningKey  {
 
     abstract override val publicKey: PublicKey

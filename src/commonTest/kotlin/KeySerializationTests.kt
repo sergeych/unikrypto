@@ -45,14 +45,14 @@ class KeySerializationTests {
         println("\n\n2: ${k2.key.packed}")
 
         assertContentEquals(k2.key.packed, k.key.packed)
-//
-//        val prk = testKey1()
-//        var t = TT1(prk)
-//        println(BossEncoder.encodeToStruct(t))
-//        println(BossDecoder.decodeFrom<TT1>(BossEncoder.encodeToStruct(t)))
-//        assertEquals(t.key.id, BossEncoder.encode(t).decodeBoss<TT1>().key.id)
-//        t = TT1(prk.publicKey)
-//        assertEquals(t.key.id, BossEncoder.encode(t).decodeBoss<TT1>().key.id)
+
+        val prk = testKey1()
+        var t = TT1(prk)
+        println(BossEncoder.encodeToStruct(t))
+        println(BossDecoder.decodeFrom<TT1>(BossEncoder.encodeToStruct(t)))
+        assertEquals(t.key.id, BossEncoder.encode(t).decodeBoss<TT1>().key.id)
+        t = TT1(prk.publicKey)
+        assertEquals(t.key.id, BossEncoder.encode(t).decodeBoss<TT1>().key.id)
     }
 
     @Test
@@ -67,6 +67,25 @@ class KeySerializationTests {
         println(x.toDump())
         val r1: Keyring = x.decodeBoss()
         assertEquals(r, r1)
+    }
+
+    @Test
+    fun testIndividualKeySerialization() {
+        val prk = testKey1()
+        var x = BossEncoder.encodeToStruct(prk)
+        val prk2 = BossDecoder.decodeFrom<PrivateKey>(x)
+        assertEquals(prk.id, prk2.id)
+
+        val puk = testKey1().publicKey
+        x = BossEncoder.encodeToStruct(puk)
+        val puk2 = BossDecoder.decodeFrom<PublicKey>(x)
+        assertEquals(puk.id, puk2.id)
+
+        val syk = SymmetricKeys.random()
+        x = BossEncoder.encodeToStruct(syk)
+        val syk2 = BossDecoder.decodeFrom<SymmetricKey>(x)
+        assertEquals(syk.id, syk2.id)
+        assertContentEquals(syk.packed, syk2.packed)
     }
 
 

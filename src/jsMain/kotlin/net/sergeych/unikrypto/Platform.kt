@@ -35,6 +35,8 @@ data class PBKDF2Params(
     val salt: Uint8Array
 )
 
+// TODO: for IN arguments it mihgt be safe to use insafe cast ot Uint9Array, need to check. Slows down performance...
+
 @Suppress("unused")
 @JsModule("unicrypto")
 @JsNonModule

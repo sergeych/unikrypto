@@ -15,7 +15,7 @@ class SignedRecord private constructor(
     val type: Type,
     val payload: BossStruct,
     val nonce: ByteArray?,
-    val publicKey: VerifyingKey
+    val publicKey: PublicKey
 ) {
     /**
      * Known types of signed records

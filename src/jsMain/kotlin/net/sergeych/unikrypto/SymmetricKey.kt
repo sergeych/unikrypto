@@ -27,5 +27,5 @@ actual val SymmetricKeys: SymmetricKeyProvider = object : SymmetricKeyProvider {
 actual fun HashAlgorithm.digest(vararg source: ByteArray): ByteArray {
     val df = Unicrypto.SHA(toUniversa())
     for( s in source) df.putSync(s.toUint8Array())
-    return df.digest().toByteArray()
+    return df.getSync().toByteArray()
 }

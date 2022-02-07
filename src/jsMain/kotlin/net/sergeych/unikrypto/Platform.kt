@@ -45,8 +45,10 @@ external class Unicrypto {
     class SHA(hashAlgorithm: String) {
 
         fun putSync(data: Uint8Array)
+        fun put(data: Uint8Array): Promise<Uint8Array>
 
-        fun digest(): Uint8Array
+        fun getSync(): Uint8Array
+        fun get(): Promise<Uint8Array>
 
         companion object {
             fun getDigestSync(name: String, source: ByteArray): Uint8Array

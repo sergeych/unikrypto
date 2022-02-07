@@ -54,6 +54,7 @@ abstract class IdentifiableKeyring {
 /**
  * Very specific case immutable singlekey ring. optimized implementation.
  */
+@Suppress("unused")
 @Serializable
 class SingleKeyring(val key: IdentifiableKey): IdentifiableKeyring() {
     override val keys: Iterable<IdentifiableKey> by lazy { listOf(key) }
@@ -81,10 +82,16 @@ data class KeyEntry(
  * Most common _mutable keyring_. Contains mutable entries that combine immutable key with mutable
  * list of tags and optional comment. See [KeyEntry]
  */
+@Suppress("unused")
 @Serializable
-class Keyring(val entries: MutableList<KeyEntry>): IdentifiableKeyring() {
+class Keyring(val entries: MutableList<KeyEntry> = mutableListOf()): IdentifiableKeyring() {
 
     constructor(vararg keys: IdentifiableKey) : this( keys.map { KeyEntry(it) }.toMutableList())
+
+    constructor(vararg taggedKeys: Pair<String,IdentifiableKey>) : this() {
+        for( (tag, key) in taggedKeys) entries.add(KeyEntry(key, mutableSetOf(tag)))
+    }
+
 
     override val keys: Iterable<IdentifiableKey> get() = entries.map { it.key }
 

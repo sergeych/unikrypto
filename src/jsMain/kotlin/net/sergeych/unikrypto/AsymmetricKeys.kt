@@ -39,8 +39,13 @@ internal class PrivateKeyImpl(val key: Unicrypto.PrivateKey) : PrivateKey() {
 fun ByteArray.toUint8Array(): Uint8Array = Uint8Array(this.toTypedArray())
 
 actual val AsymmetricKeys: AsymmetricKeysProvider = object : AsymmetricKeysProvider {
-    override suspend fun generate(bitStrength: Int): PrivateKey =
-        PrivateKeyImpl(Unicrypto.PrivateKey.generate(PrivateKeyParams(bitStrength)).await())
+    override suspend fun generate(bitStrength: Int): PrivateKey {
+        val pp = PrivateKeyParams(bitStrength)
+//        console.log("\n\n-------->", pp)
+//        console.log("\n\n")
+//        throw Exception("the test")
+        return PrivateKeyImpl(Unicrypto.PrivateKey.generate(pp).await())
+    }
 
     override fun unpackPublic(data: ByteArray): PublicKey
         = PublicKeyImpl(Unicrypto.PublicKey.unpackSync(data.toUint8Array()))

@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalJsExport::class)
+@file:Suppress("unused")
 
 package net.sergeych.unikrypto
 
@@ -7,13 +8,13 @@ import org.khronos.webgl.Uint8Array
 import kotlin.js.Promise
 
 @JsExport
-data class SymmetricKeyParams(val keyBytes: Uint8Array)
+class SymmetricKeyParams(val keyBytes: Uint8Array)
 
 @JsExport
-data class PrivateKeyParams(val strength: Int)
+class PrivateKeyParams(val strength: Int)
 
 @JsExport
-data class SigningOptions(
+class SigningOptions(
     val salt: ByteArray? = null,
     val salLength: Int? = null,
     val mgf1Hash: String = "sha1",
@@ -21,14 +22,14 @@ data class SigningOptions(
 )
 
 @JsExport
-data class OAEPOptions(
+class OAEPOptions(
     val seed: Uint8Array? = null, // optional, default none
     val mgf1Hash: String? = null,
     val oaepHash: String? = null
 )
 
 @JsExport
-data class PBKDF2Params(
+class PBKDF2Params(
     val rounds: Int,
     val keyLength: Int,
     val password: String,
@@ -100,7 +101,7 @@ external class Unicrypto {
         fun packSync(): ByteArray
 
         companion object {
-            suspend fun generate(params: PrivateKeyParams): Promise<PrivateKey>
+            fun generate(params: dynamic): Promise<PrivateKey>
             fun unpackSync(packed: dynamic, dummy: dynamic = definedExternally): PrivateKey
         }
     }

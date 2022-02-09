@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "net.sergeych"
-version = "1.0-SNAPSHOT"
+version = "1.0.1"
 
 repositories {
     mavenCentral()
@@ -35,6 +35,9 @@ kotlin {
                 useKarma {
                     useChromeHeadless()
                 }
+//                useMocha {
+//                    timeout = "30000"
+//                }
             }
             commonWebpackConfig {
 //                cssSupport.enabled = true
@@ -76,8 +79,8 @@ kotlin {
         val jvmTest by getting
         val jsMain by getting {
             dependencies {
-                implementation(npm("unicrypto", "1.12.0"))
-                implementation(npm("copy-webpack-plugin", "9.0.0"))
+                implementation(npm("unicrypto", "1.12.1"))
+//                implementation(npm("copy-webpack-plugin", "9.0.0"))
             }
         }
         val jsTest by getting {

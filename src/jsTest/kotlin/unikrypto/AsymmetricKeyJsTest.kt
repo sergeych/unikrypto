@@ -39,6 +39,11 @@ class AsymmetricKeyJsTest {
         }
     }
 
+    @Test
+    fun testGenerate() = runTest {
+        val pair = AsymmetricKeys.generate(2048)
+    }
+
 //    @Test
 //    fun signatureIsCompatible1() {
 //        val key = "HggcAQABxAABmm4/k4H32o+5lRxJkP5/Bthu1Cts7KEb1FJbpdbJJtlQx8gj6kF1l6lRTrbeIZV8Xc2lnsRBDQbh0x8yYFJ5Dgn4C8Htow0Sul947232IZPx07/ABs8JAmgeg6GBxtGswlAte2zENYr2ztK2f/AvkAIklov28N5DR3uXvk4Kp5A2q4dTBp3hy3wybs/ViSKEYM7Qv/lX/kfSsBV+fncd/v3EaPgVc365GdHW6sy4ekyfvnRTD0+eUEF9RA4B52xnx/3y4elXl3vTf0w83zb8eL/EyPiZVEtIxs1PP/A8f0EzTROd3kDeoTDs10dcT+OJyiaDpwPZpzzCRTr3LYvK2Q=="

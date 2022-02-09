@@ -108,4 +108,8 @@ class Keyring(val entries: MutableList<KeyEntry> = mutableListOf()): Identifiabl
         entries.filter { e ->
             tags.any { it in e.tags }
         }
+
+    @Suppress("UNCHECKED_CAST")
+    fun <T: IdentifiableKey>findById(id: KeyIdentity): T? =
+        entries.firstOrNull {  it.key.id == id }?.key as T?
 }

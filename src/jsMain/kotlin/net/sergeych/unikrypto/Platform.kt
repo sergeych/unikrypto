@@ -98,16 +98,18 @@ external class Unicrypto {
 
         val publicKey: PublicKey
 
-        fun packSync(): ByteArray
+        fun packSync(): Uint8Array
+        fun pack(password: String): Promise<Uint8Array>
 
         companion object {
             fun generate(params: dynamic): Promise<PrivateKey>
             fun unpackSync(packed: dynamic, dummy: dynamic = definedExternally): PrivateKey
+            fun unpackWithPassword(packed: Uint8Array, password: String): Promise<PrivateKey>
         }
     }
 
     @Suppress("unused")
-    class KeyAddress {
+    class KeyAddress(source: dynamic) {
 
         val asBinary: Uint8Array
         val asString: String

@@ -240,6 +240,13 @@ abstract class PrivateKey: DecryptingKey, SigningKey  {
     abstract override val publicKey: PublicKey
 
     /**
+     * Pack a key to universa format with a password amd PBKDF procedure. We recommend to use other
+     * formats, like encrypting the keyring, as encrypting every key is too resource consuming. Mainly to
+     * provide compatibility with older universa files
+     */
+    abstract suspend fun packWithPassword(password: String): ByteArray
+
+    /**
      * Platform-specific method to decrypt a block. The block size should be `publicKey.minimumEncryptedSize` exactly.
      * [etaDecrypt] implementation uses it to decrypt long and short data simultaneously.
      */
@@ -269,9 +276,18 @@ abstract class PrivateKey: DecryptingKey, SigningKey  {
  * Platform-dependent provider for asymmetric keys
  */
 interface AsymmetricKeysProvider {
+    /**
+     * Generate new private+public key pair of a given strength. 2048, 4096 and 8192 bits strength is
+     * supported. Could be slow in browsers that do not support wasm. USes worker in browsers when supported.
+     */
     suspend fun generate(bitStrength: Int): PrivateKey
     fun unpackPublic(data: ByteArray): PublicKey
     fun unpackPrivate(data: ByteArray): PrivateKey
+    /**
+     * Generate new private+public key pair of a given strength. 2048, 4096 and 8192 bits strength is
+     * supported. Could be slow in browsers that do not support wasm. USes worker in browsers when supported.
+     */
+    suspend fun decryptPrivateKey(data: ByteArray, password: String): PrivateKey
 }
 
 

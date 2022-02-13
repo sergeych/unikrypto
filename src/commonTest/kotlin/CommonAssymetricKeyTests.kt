@@ -1,7 +1,7 @@
 import net.sergeych.mp_tools.decodeBase64
 import net.sergeych.mp_tools.encodeToBase64
-import net.sergeych.mp_tools.encodeToBase64Compact
 import net.sergeych.unikrypto.AsymmetricKeys
+import net.sergeych.unikrypto.KeyAddress
 import net.sergeych.unikrypto.PrivateKey
 import kotlin.test.*
 
@@ -57,6 +57,28 @@ class CommonAssymetricKeyTests {
             assertTrue { k2.id == k.publicKey.id }
 //            assertFalse { k2 == k }
         }
+    }
+
+    @Test
+    fun unpackWithPassword() = runTest {
+        val password = "ihulfwer7"
+        val testPackedKey = """
+            Hhi8FxgFELggAMhAQg9keZWgPOim6zj7UymnxDoBatTkcmnfXdex7NtZOyCeqqGA0gpL8KxKFWvYCG77
+            wBXO/eQmdJ3KqfYZ/ex2021VXmyOYB+345wD65Kq7003UYYe+Zpt+oqf8QlXbJZAMZtWzC5KL/S7/CLN
+            YaO/IY8R4kZc03jFxrQCkDRB7GW8Bql5kfi8CU+pYNmcq2C5kmU3rytzxSD5S7b66ETMzOHBxmyBilCf
+            N6hbAC9IWlR5OC76lVV+QAwcDy4E+AkTq3JBpb4FKLi4snSTPiMrXvaScYKLCnz1RxnOxH7s9Onihrj/
+            MBT/l3ACha/f2dqk/2QCBElNdR3H2Hx85IQoyoav2wmLmcTRV0K1NsArUq7p2O6iTB3zzKDpCyXD+R/d
+            VqxgyXWlPcZBL0UomES8x5PbQ1obzVoJVySFtkwu4oya4Kfd1VOoPuZQCgE=
+        """.trimIndent().decodeBase64()
+        val expectedLongAddress = "JvpE8A4Niixqu9E58UxhYwPtBVfKHzX1bRaS5zCtqrjedtv364Th9ZX5EdTi7tmpHJ69Jp6S"
+        val key = AsymmetricKeys.decryptPrivateKey(testPackedKey, password)
+
+        assertEquals(expectedLongAddress, key.id.toString())
+        assertTrue(KeyAddress.of(expectedLongAddress).matches(key) )
+
+        val psw = "foobarbuzz"
+        val k2 = AsymmetricKeys.decryptPrivateKey(key.packWithPassword(psw), psw)
+        assertEquals(expectedLongAddress, k2.id.asString)
     }
 }
 

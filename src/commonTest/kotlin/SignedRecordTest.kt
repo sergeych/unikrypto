@@ -1,6 +1,7 @@
 import kotlinx.serialization.Serializable
 import net.sergeych.mp_tools.decodeBase64
 import net.sergeych.mp_tools.encodeToBase64
+import net.sergeych.mp_tools.encodeToBase64Compact
 import net.sergeych.mptools.toDump
 import net.sergeych.unikrypto.AsymmetricKeys
 import net.sergeych.unikrypto.SignedRecord
@@ -48,7 +49,7 @@ class SignedRecordTest {
 //        println("00> ${sr.decode<PR>()}")
         assertContentEquals(byteArrayOf(44, 7, 0, 0, 0, 0, 0, 0), sr.decode<PR>().POWResult)
         assertEquals(SignedRecord.Type.RECORD_3_384, sr.type)
-        assertEquals("EFapEgInjWIY7E21rI0zrwcgNEg9Q1M7jrhOiWxbQfBtexgJQUAA42MfPLefbDZYNLlfUl0", sr.publicKey.id.asString)
+        assertEquals("EFapEgInjWIY7E21rI0zrwcgNEg9Q1M7jrhOiWxbQfBtexgJQUAA42MfPLefbDZYNLlfUl0", sr.publicKey.id.id.encodeToBase64Compact())
     }
 
 //    @Test

@@ -23,14 +23,16 @@ internal class PublicKeyImpl(val key: Unicrypto.PublicKey) : PublicKey() {
 
 internal class PrivateKeyImpl(val key: Unicrypto.PrivateKey) : PrivateKey() {
 
-    override val id: KeyIdentity by lazy { BytesId(key.publicKey.longAddress.asBinary.toByteArray()) }
+    override val id: KeyIdentity by lazy { AddressId(KeyAddressJs(key.publicKey.longAddress)) }
 
     override val publicKey: PublicKey by lazy { PublicKeyImpl(key.publicKey) }
+
+    override suspend fun packWithPassword(password: String) = key.pack(password).await().toByteArray()
 
     override fun decryptBlock(ciphertext: ByteArray): ByteArray =
         key.decryptSync(ciphertext.toUint8Array(), defaultOAEPOptions).toByteArray()
 
-    override val packed: ByteArray by lazy { key.packSync() }
+    override val packed: ByteArray by lazy { key.packSync().toByteArray() }
 
     override fun sign(data: ByteArray, hashAlgorithm: HashAlgorithm): ByteArray
         = key.signSync(data.toUint8Array(),SigningOptions(pssHash = hashAlgorithm.toUniversa())).toByteArray()
@@ -39,19 +41,17 @@ internal class PrivateKeyImpl(val key: Unicrypto.PrivateKey) : PrivateKey() {
 fun ByteArray.toUint8Array(): Uint8Array = Uint8Array(this.toTypedArray())
 
 actual val AsymmetricKeys: AsymmetricKeysProvider = object : AsymmetricKeysProvider {
-    override suspend fun generate(bitStrength: Int): PrivateKey {
-        val pp = PrivateKeyParams(bitStrength)
-//        console.log("\n\n-------->", pp)
-//        console.log("\n\n")
-//        throw Exception("the test")
-        return PrivateKeyImpl(Unicrypto.PrivateKey.generate(pp).await())
-    }
+    override suspend fun generate(bitStrength: Int): PrivateKey =
+        PrivateKeyImpl(Unicrypto.PrivateKey.generate(PrivateKeyParams(bitStrength)).await())
 
     override fun unpackPublic(data: ByteArray): PublicKey
         = PublicKeyImpl(Unicrypto.PublicKey.unpackSync(data.toUint8Array()))
 
     override fun unpackPrivate(data: ByteArray): PrivateKey
         = PrivateKeyImpl(Unicrypto.PrivateKey.unpackSync(data.toUint8Array()))
+
+    override suspend fun decryptPrivateKey(data: ByteArray, password: String): PrivateKey
+        = PrivateKeyImpl(Unicrypto.PrivateKey.unpackWithPassword(data.toUint8Array(), password).await())
 }
 
 val VerifyingKey.universaKey: Unicrypto.PublicKey get() = (this as PublicKeyImpl).key

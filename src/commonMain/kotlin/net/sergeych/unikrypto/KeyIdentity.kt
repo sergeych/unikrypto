@@ -155,3 +155,23 @@ expect suspend fun PerformPBKDF2(
     rounds: Int,
     salt: ByteArray): ByteArray
 
+/**
+ * The [KeyAddress] based [KeyIdentity] implementation used with asymmetric keys. _Attention! Unlike other
+ * identities, here [asString] is not a base64 version of [id], instead, it used [KeyAddress] secure encoding
+ * `Safe58` that reduces possibility of errors when the address is typed in by hand, also, its id includes
+ * check code (crc) inside, so wrong KeyAddress and identity will most likely be detected on construction.
+ *
+ * This identity is automatically used with asymmetric keys. Comparing by id works normally. Just do not compare
+ * asString with manually calculated base64. If you need to compare with string, be sure that the string is
+ * obtained from constructed [KeyAddress] or [AddressId.asString].
+ */
+@Serializable
+@SerialName("AddressId")
+class AddressId(val address: KeyAddress): KeyIdentity() {
+
+    constructor(bytes: ByteArray) : this(KeyAddress.of(bytes))
+
+    override val id: ByteArray = address.asBytes
+
+    override val asString: String by lazy { address.asString }
+}

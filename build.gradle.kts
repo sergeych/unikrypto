@@ -1,3 +1,5 @@
+@file:Suppress("UNUSED_VARIABLE")
+
 plugins {
     kotlin("multiplatform") version "1.6.10"
     kotlin("plugin.serialization") version "1.6.10"
@@ -5,19 +7,17 @@ plugins {
 }
 
 group = "net.sergeych"
-version = "1.0.1"
+version = "1.1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven("https://maven.universablockchain.com")
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
-    }
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor(30, "seconds")
 }
-
 
 kotlin {
     jvm {
@@ -32,12 +32,12 @@ kotlin {
     js(IR) {
         browser {
             testTask {
-                useKarma {
-                    useChromeHeadless()
-                }
-//                useMocha {
-//                    timeout = "30000"
+//                useKarma {
+//                    useChromeHeadless()
 //                }
+                useMocha {
+                    timeout = "30000"
+                }
             }
             commonWebpackConfig {
 //                cssSupport.enabled = true
@@ -57,13 +57,17 @@ kotlin {
         listOf(jvm(), js()).map { it.name } + "kotlinMultiplatform"
 
     sourceSets {
+        all {
+            languageSettings.optIn("kotlin.RequiresOptIn")
+        }
         val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
-                implementation("net.sergeych:boss-serialization-mp:0.1.1-SNAPSHOT")
-                implementation("net.sergeych:mp_stools:1.0.0-SNAPSHOT")
+                api("net.sergeych:boss-serialization-mp:[0.1.2-SNAPSHOT,)")
+                implementation("net.sergeych:mp_stools:[1.1.0-SNAPSHOT,)")
+//                implementation("net.sergeych:mp_stools:1.1.0-SNAPSHOT")
             }
         }
         val commonTest by getting {
@@ -79,7 +83,7 @@ kotlin {
         val jvmTest by getting
         val jsMain by getting {
             dependencies {
-                implementation(npm("unicrypto", "1.12.1"))
+                implementation(npm("unicrypto", "1.12.2"))
 //                implementation(npm("copy-webpack-plugin", "9.0.0"))
             }
         }

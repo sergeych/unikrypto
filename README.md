@@ -79,6 +79,7 @@ Sometimes it is convenient to switch to encrypted storage on the fly. In this ca
 
 ### 1.1.0-SNAPSHOT
 
+- Introduced `AheadPrivateKeyGenerator` class to generate private keys in bacground ahead of time
 - Added platform based mutex surrogate that performs that uses mutex on JVM and does nothing on JS. Strange times require strange deeds.
 - Added `EncryptedBinaryStorage`, `EncryptedStorage` and `BindableBinaryStorage`: infrastructure to effectively keep encrypted keys and values in KV storage
 - Added `KeyAddress` support, which incorporates address integrity check

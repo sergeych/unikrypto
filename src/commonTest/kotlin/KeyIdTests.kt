@@ -2,11 +2,10 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import net.sergeych.boss_serialization_mp.BossEncoder
 import net.sergeych.boss_serialization_mp.decodeBoss
+import net.sergeych.mp_tools.decodeBase64
 import net.sergeych.mptools.encodeToHex
 import net.sergeych.mptools.toDump
-import net.sergeych.unikrypto.HashAlgorithm
-import net.sergeych.unikrypto.KeyIdentity
-import net.sergeych.unikrypto.PasswordId
+import net.sergeych.unikrypto.*
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -31,6 +30,23 @@ class KeyIdTests {
             val id2: KeyIdentity = BossEncoder.encode(id1).decodeBoss()
             println(id2)
             assertTrue { id1 == id2}
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    @Test
+    fun testAddressKeyIdSerialization() = runTest {
+        val password = "ihulfwer7"
+        val testPackedKey = """
+            Hhi8FxgFELggAMhAQg9keZWgPOim6zj7UymnxDoBatTkcmnfXdex7NtZOyCeqqGA0gpL8KxKFWvYCG77
+            wBXO/eQmdJ3KqfYZ/ex2021VXmyOYB+345wD65Kq7003UYYe+Zpt+oqf8QlXbJZAMZtWzC5KL/S7/CLN
+            YaO/IY8R4kZc03jFxrQCkDRB7GW8Bql5kfi8CU+pYNmcq2C5kmU3rytzxSD5S7b66ETMzOHBxmyBilCf
+            N6hbAC9IWlR5OC76lVV+QAwcDy4E+AkTq3JBpb4FKLi4snSTPiMrXvaScYKLCnz1RxnOxH7s9Onihrj/
+            MBT/l3ACha/f2dqk/2QCBElNdR3H2Hx85IQoyoav2wmLmcTRV0K1NsArUq7p2O6iTB3zzKDpCyXD+R/d
+            VqxgyXWlPcZBL0UomES8x5PbQ1obzVoJVySFtkwu4oya4Kfd1VOoPuZQCgE=
+        """.trimIndent().decodeBase64()
+        val key = AsymmetricKeys.decryptPrivateKey(testPackedKey, password)
+        val x = BossEncoder.encode(key.id).decodeBoss<KeyIdentity>()
+        assertEquals(key.id, x)
     }
 
     @Serializable

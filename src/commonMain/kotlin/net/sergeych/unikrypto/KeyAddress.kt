@@ -1,5 +1,11 @@
 package net.sergeych.unikrypto
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+
 /**
  * The key address is a special kind of assymmetric key identity used in Universa. It has special mechanics
  * to prevent it from mistyping: crc code inside and special character representation (safe58) that corrects
@@ -9,6 +15,7 @@ package net.sergeych.unikrypto
  * Please note that for security reasons we only implement "long" addresses, short ones, used in early years
  * of universa blockchain, are less strong and may be vulnerable in the quantum computing era.
  */
+@Serializable(with = KeyAddressSerializer::class)
 interface KeyAddress {
     /**
      * Byte representation, includes integrity code (crc)
@@ -45,3 +52,23 @@ interface KeyAddress {
 expect fun decodeAddress(data: ByteArray): KeyAddress
 
 expect fun decodeAddress(text: String): KeyAddress
+
+@Serializable
+internal data class KeyAddressSurrogate(
+    val packed: ByteArray
+)
+
+
+object KeyAddressSerializer : KSerializer<KeyAddress> {
+    override fun deserialize(decoder: Decoder): KeyAddress {
+        val s = decoder.decodeSerializableValue(KeyAddressSurrogate.serializer())
+        return decodeAddress(s.packed)
+    }
+
+    override val descriptor: SerialDescriptor = KeyAddressSurrogate.serializer().descriptor
+
+    override fun serialize(encoder: Encoder, value: KeyAddress) {
+        encoder.encodeSerializableValue(KeyAddressSurrogate.serializer(), KeyAddressSurrogate(value.asBytes))
+    }
+
+}

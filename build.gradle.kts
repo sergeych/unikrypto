@@ -11,7 +11,6 @@ version = "1.1.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
-    mavenLocal()
     maven("https://maven.universablockchain.com")
 }
 
@@ -66,7 +65,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
                 api("net.sergeych:boss-serialization-mp:[0.1.2-SNAPSHOT,)")
-                implementation("net.sergeych:mp_stools:[1.1.0-SNAPSHOT,)")
+                implementation("net.sergeych:mp_stools:[1.1.1-SNAPSHOT,)")
 //                implementation("net.sergeych:mp_stools:1.1.0-SNAPSHOT")
             }
         }

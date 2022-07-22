@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "net.sergeych"
-version = "1.1.0-SNAPSHOT"
+version = "1.1.1"
 
 repositories {
     mavenCentral()
@@ -56,16 +56,17 @@ kotlin {
         listOf(jvm(), js()).map { it.name } + "kotlinMultiplatform"
 
     sourceSets {
-        all {
-            languageSettings.optIn("kotlin.RequiresOptIn")
-        }
+//        all {
+//            languageSettings.optIn("kotlin.RequiresOptIn")
+//        }
         val commonMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.1")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.2")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
                 api("net.sergeych:boss-serialization-mp:[0.1.2-SNAPSHOT,)")
-                implementation("net.sergeych:mp_stools:[1.1.1-SNAPSHOT,)")
+                implementation("net.sergeych:mp_stools:1.2.3-SNAPSHOT")
+//                implementation("net.sergeych:mp_stools:[1.2.3-SNAPSHOT,)")
 //                implementation("net.sergeych:mp_stools:1.1.0-SNAPSHOT")
             }
         }
@@ -83,7 +84,6 @@ kotlin {
         val jsMain by getting {
             dependencies {
                 implementation(npm("unicrypto", "1.12.2"))
-//                implementation(npm("copy-webpack-plugin", "9.0.0"))
             }
         }
         val jsTest by getting {

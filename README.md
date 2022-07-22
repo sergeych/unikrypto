@@ -2,7 +2,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> __beta stage__ yet, testing in a commercial project. 
+> __RC2 stage__ used in production systems.
+
+Please note that 1.1.* versions are for kotlin 1.6 and shoul be compatible with it. As 1.7 JS code is not generally compatible, 1.2.* versions will be created for it.
 
 A new generation of cryptographic primitives that origins in the universa projects now in form of kotlin multiplatform library. It effectively works in 
 
@@ -27,7 +29,7 @@ Add dependency to where needed:
 ~~~
 dependencies {
     //...  
-    implementation("net.sergeych:unikrypto:1.0-SNAPSHOT")
+    implementation("net.sergeych:unikrypto:1.1.1")
 }
 ~~~
 

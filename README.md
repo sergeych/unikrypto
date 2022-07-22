@@ -4,7 +4,7 @@
 
 > __RC2 stage__ used in production systems.
 
-Please note that 1.1.* versions are for kotlin 1.6 and shoul be compatible with it. As 1.7 JS code is not generally compatible, 1.2.* versions will be created for it.
+__1.2.*__ version are to use with __kotlin 1.7__. 
 
 A new generation of cryptographic primitives that origins in the universa projects now in form of kotlin multiplatform library. It effectively works in 
 

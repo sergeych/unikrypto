@@ -56,6 +56,21 @@ external class Unicrypto {
         }
     }
 
+    class DiffieHellman(prime: String, generator: String?) {
+        val prime: String
+        val generator: String
+        fun generateKeys(): String
+        fun computeSecret(pub: String): String
+
+        fun setPublicKey(pub: String): Unit
+        fun setPrivateKey(priv: String): Unit
+        fun getPublicKey(): String
+        fun getPrivateKey(): String
+        companion object {
+            fun generate(primeLength: Int): DiffieHellman
+        }
+    }
+
     companion object {
         fun randomBytes(size: Int): Uint8Array
         fun encode64(data: ByteArray): String

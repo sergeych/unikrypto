@@ -1,6 +1,9 @@
 package net.sergeych.unikrypto
 
-import net.sergeych.utils.Base64
+import DHExchange
+import DH_CERTAINTY
+import DH_PRIME_SIZE
+import DiffieHellmanAbstract
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.agreement.DHBasicAgreement
 import org.bouncycastle.crypto.generators.DHKeyPairGenerator
@@ -9,42 +12,27 @@ import org.bouncycastle.crypto.params.DHKeyGenerationParameters
 import org.bouncycastle.crypto.params.DHParameters
 import org.bouncycastle.crypto.params.DHPrivateKeyParameters
 import org.bouncycastle.crypto.params.DHPublicKeyParameters
-import org.bouncycastle.jcajce.provider.symmetric.ARC4.Base
 import java.math.BigInteger
 import java.security.SecureRandom
 
-private val CERTAINTY = 30
-private val PRIME_SIZE = 512
-
-private fun fromBase64(hex: String): BigInteger {
-    return BigInteger(Base64.decodeLines(hex))
-//    BigInteger(hex, 16)
-}
-
-class DiffieHellman {
+class DiffieHellman : DiffieHellmanAbstract() {
     var pair: AsymmetricCipherKeyPair? = null
-    var key: BigInteger? = null
+    override var key: ByteArray? = null
     var params: DHParameters? = null
 
     private var agreement: DHBasicAgreement? = null
-
-    private fun getParameter(param: BigInteger?): String {
+    private fun getParameter(param: BigInteger?): ByteArray {
         if (param == null) throw Exception("DH is not initialized")
-        return Base64.encodeString(param.toByteArray())
+        return param.toByteArray()
     }
-
-    fun getP(): String = getParameter(params?.p)
-    fun getG(): String = getParameter(params?.g)
-    fun getPublicKey(): String {
+    fun getP(): ByteArray = getParameter(params?.p)
+    fun getG(): ByteArray = getParameter(params?.g)
+    fun getPublicKey(): ByteArray {
         val pub = pair?.public ?: throw Exception("DH is not initialized")
-        return Base64.encodeString((pub as DHPublicKeyParameters).y.toByteArray())
+        val y = (pub as DHPublicKeyParameters).y
+        return y.toByteArray()
     }
-
-    fun getPrivateKey(): String {
-        val priv = pair?.private ?: throw Exception("DH is not initialized")
-        return Base64.encodeString((priv as DHPrivateKeyParameters).x.toByteArray())
-    }
-
+    override fun getExchange(): DHExchange = DHExchange(getPublicKey(), getP(), getG())
     private fun generatePair(params: DHParameters): AsymmetricCipherKeyPair {
         val keyGen = DHKeyPairGenerator()
         val DHKeyGenParams = DHKeyGenerationParameters(SecureRandom(), params)
@@ -60,54 +48,48 @@ class DiffieHellman {
         return agreement
     }
 
-    fun init() {
+    override fun init() {
         val generator = DHParametersGenerator()
-        generator.init(PRIME_SIZE, CERTAINTY, SecureRandom())
+        generator.init(DH_PRIME_SIZE, DH_CERTAINTY, SecureRandom())
         params = generator.generateParameters()
         pair = generatePair(params!!)
-
-
-        println("P")
-        println(getP())
-        println("G")
-        println(getG())
-        println("PUB")
-        println(getPublicKey())
-        println("PRIV")
-        println(getPrivateKey())
 
         agreement = generateAgreement()
     }
 
-    fun initTest(p: String, g: String, pub: String, priv: String) {
-        params = DHParameters(fromBase64(p), fromBase64(g))
+    fun initTest(ex: DHExchange, priv: ByteArray) {
+        params = DHParameters(BigInteger(1, ex.p), BigInteger(1, ex.g))
 
         pair = AsymmetricCipherKeyPair(
-            DHPublicKeyParameters(fromBase64(pub), params),
-            DHPrivateKeyParameters(fromBase64(priv), params)
+            DHPublicKeyParameters(BigInteger(1, ex.pub), params),
+            DHPrivateKeyParameters(BigInteger(1, priv), params)
         )
 
         agreement = generateAgreement()
     }
-
-    fun proceed(p: BigInteger, g: BigInteger, publicKey: BigInteger) {
-        params = DHParameters(p, g)
-        val pub = DHPublicKeyParameters(publicKey, params)
+    override fun proceed(exchange: DHExchange) {
+        params = DHParameters(BigInteger(1, exchange.p), BigInteger(1, exchange.g))
+        val pub = DHPublicKeyParameters(BigInteger(1, exchange.pub), params)
         pair = generatePair(params!!)
         agreement = generateAgreement()
-        key = agreement?.calculateAgreement(pub)
+        key = agreement?.calculateAgreement(pub)?.toByteArray()
     }
 
-    fun proceed(pString: String, gString: String, publicString: String) {
-        return proceed(fromBase64(pString), fromBase64(gString), fromBase64(publicString))
+    fun proceedTest(exchange: DHExchange, ownerPub: ByteArray, ownerPriv: ByteArray) {
+        params = DHParameters(BigInteger(1, exchange.p), BigInteger(1, exchange.g))
+        val pub = DHPublicKeyParameters(BigInteger(1, exchange.pub), params)
+
+        pair = AsymmetricCipherKeyPair(
+            DHPublicKeyParameters(BigInteger(1, ownerPub), params),
+            DHPrivateKeyParameters(BigInteger(1, ownerPriv), params)
+        )
+
+        agreement = generateAgreement()
+        key = agreement?.calculateAgreement(pub)?.toByteArray()
     }
 
-    fun finalize(publicKey: BigInteger) {
-        val pub = DHPublicKeyParameters(publicKey, params)
-        key = agreement?.calculateAgreement(pub)
-    }
-
-    fun finalize(publicString: String) {
-        return finalize(fromBase64(publicString))
+    override fun finalize(exchange: DHExchange) {
+        val pub = DHPublicKeyParameters(BigInteger(exchange.pub), params)
+        key = agreement?.calculateAgreement(pub)?.toByteArray()
     }
 }

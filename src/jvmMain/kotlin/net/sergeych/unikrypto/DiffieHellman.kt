@@ -1,9 +1,5 @@
 package net.sergeych.unikrypto
 
-import DHExchange
-import DH_CERTAINTY
-import DH_PRIME_SIZE
-import DiffieHellmanAbstract
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.agreement.DHBasicAgreement
 import org.bouncycastle.crypto.generators.DHKeyPairGenerator
@@ -15,9 +11,9 @@ import org.bouncycastle.crypto.params.DHPublicKeyParameters
 import java.math.BigInteger
 import java.security.SecureRandom
 
-class DiffieHellman : DiffieHellmanAbstract() {
+actual class DiffieHellman {
     var pair: AsymmetricCipherKeyPair? = null
-    override var key: ByteArray? = null
+    actual var key: ByteArray? = null
     var params: DHParameters? = null
 
     private var agreement: DHBasicAgreement? = null
@@ -32,7 +28,7 @@ class DiffieHellman : DiffieHellmanAbstract() {
         val y = (pub as DHPublicKeyParameters).y
         return y.toByteArray()
     }
-    override fun getExchange(): DHExchange = DHExchange(getPublicKey(), getP(), getG())
+    actual fun getExchange(): DHExchange = DHExchange(getPublicKey(), getP(), getG())
     private fun generatePair(params: DHParameters): AsymmetricCipherKeyPair {
         val keyGen = DHKeyPairGenerator()
         val DHKeyGenParams = DHKeyGenerationParameters(SecureRandom(), params)
@@ -48,7 +44,7 @@ class DiffieHellman : DiffieHellmanAbstract() {
         return agreement
     }
 
-    override fun init() {
+    actual fun init() {
         val generator = DHParametersGenerator()
         generator.init(DH_PRIME_SIZE, DH_CERTAINTY, SecureRandom())
         params = generator.generateParameters()
@@ -67,7 +63,7 @@ class DiffieHellman : DiffieHellmanAbstract() {
 
         agreement = generateAgreement()
     }
-    override fun proceed(exchange: DHExchange) {
+    actual fun proceed(exchange: DHExchange) {
         params = DHParameters(BigInteger(1, exchange.p), BigInteger(1, exchange.g))
         val pub = DHPublicKeyParameters(BigInteger(1, exchange.pub), params)
         pair = generatePair(params!!)
@@ -88,7 +84,7 @@ class DiffieHellman : DiffieHellmanAbstract() {
         key = agreement?.calculateAgreement(pub)?.toByteArray()
     }
 
-    override fun finalize(exchange: DHExchange) {
+    actual fun finalize(exchange: DHExchange) {
         val pub = DHPublicKeyParameters(BigInteger(exchange.pub), params)
         key = agreement?.calculateAgreement(pub)?.toByteArray()
     }

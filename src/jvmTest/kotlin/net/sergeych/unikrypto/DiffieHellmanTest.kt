@@ -1,6 +1,5 @@
 package net.sergeych.unikrypto
 
-import DHExchange
 import net.sergeych.mp_tools.decodeBase64
 import net.sergeych.mp_tools.encodeToBase64
 import org.junit.jupiter.api.Assertions.assertTrue

@@ -1,3 +1,5 @@
+package net.sergeych.unikrypto
+
 import kotlinx.serialization.Serializable
 
 val DH_CERTAINTY = 30
@@ -10,11 +12,10 @@ data class DHExchange(
     val g: ByteArray
 )
 
-abstract class DiffieHellmanAbstract {
-    abstract val key: ByteArray?
-
-    abstract fun init(): Unit
-    abstract fun proceed(exchange: DHExchange): Unit
-    abstract fun finalize(exchange: DHExchange): Unit
-    abstract fun getExchange(): DHExchange
+expect class DiffieHellman {
+    var key: ByteArray?
+    fun getExchange(): DHExchange
+    fun init()
+    fun proceed(exchange: DHExchange)
+    fun finalize(exchange: DHExchange)
 }

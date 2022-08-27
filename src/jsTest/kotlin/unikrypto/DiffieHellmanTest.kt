@@ -13,10 +13,10 @@ class DiffieHellmanJsTest {
         val bob = DiffieHellman()
 
         alice.init()
-        bob.proceed(alice.getExchange())
-        alice.finalize(bob.getExchange())
+        val bobKey = bob.proceed(alice.getExchange())
+        val aliceKey = alice.finalize(bob.getExchange())
 
-        assertTrue(bob.key != null && bob.key?.encodeToBase64() == alice.key?.encodeToBase64())
+        assertTrue(bobKey.encodeToBase64() == aliceKey.encodeToBase64())
     }
 
 
@@ -33,9 +33,9 @@ class DiffieHellmanJsTest {
 
         val bobPublicKey = "WyAfYODQQCqtFG1sy3+PZB2CsDtYf1u7VUf5bRRtb8mLvuSmZDKU8gKqkY8NHVe2Z29zH+e0IUVWE7tvUHgRbA=="
         val exchangeFromBob = DHExchange(bobPublicKey.decodeBase64(), p.decodeBase64(), g.decodeBase64())
-        alice.finalize(exchangeFromBob)
+        val aliceKey = alice.finalize(exchangeFromBob)
 
-        assertTrue(alice.key!!.encodeToBase64() == "UC8DsF26bmB5tNKpQ3PTxEEwt/meUAYaOhnaQomh63oepluMEdNfAAPtmRae0txtlU8U/fOyuRqeNAJknx6Y0Q==")
+        assertTrue(aliceKey.encodeToBase64() == "UC8DsF26bmB5tNKpQ3PTxEEwt/meUAYaOhnaQomh63oepluMEdNfAAPtmRae0txtlU8U/fOyuRqeNAJknx6Y0Q==")
 
     }
 
@@ -51,7 +51,7 @@ class DiffieHellmanJsTest {
         val bob = DiffieHellman()
 
         val exchangeFromAlice = DHExchange(alicePublic.decodeBase64(), p.decodeBase64(), g.decodeBase64())
-        bob.proceedTest(exchangeFromAlice, bobPublic.decodeBase64(), bobPrivate.decodeBase64())
-        assertTrue(bob.key!!.encodeToBase64() == "K9vzuRm1ZKaQ8u8yO9nKBkVkDPLkatp7GqsKTcjoWTQwXqSk6vYG0YJqXquLMcW9X1jPBZFSf3+629Hg0ggz7g==")
+        val bobKey = bob.proceedTest(exchangeFromAlice, bobPublic.decodeBase64(), bobPrivate.decodeBase64())
+        assertTrue(bobKey.encodeToBase64() == "K9vzuRm1ZKaQ8u8yO9nKBkVkDPLkatp7GqsKTcjoWTQwXqSk6vYG0YJqXquLMcW9X1jPBZFSf3+629Hg0ggz7g==")
     }
 }

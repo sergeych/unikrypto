@@ -13,7 +13,6 @@ import java.security.SecureRandom
 
 actual class DiffieHellman {
     var pair: AsymmetricCipherKeyPair? = null
-    actual var key: ByteArray? = null
     var params: DHParameters? = null
 
     private var agreement: DHBasicAgreement? = null
@@ -63,15 +62,15 @@ actual class DiffieHellman {
 
         agreement = generateAgreement()
     }
-    actual fun proceed(exchange: DHExchange) {
+    actual fun proceed(exchange: DHExchange): ByteArray {
         params = DHParameters(BigInteger(1, exchange.p), BigInteger(1, exchange.g))
         val pub = DHPublicKeyParameters(BigInteger(1, exchange.pub), params)
         pair = generatePair(params!!)
-        agreement = generateAgreement()
-        key = agreement?.calculateAgreement(pub)?.toByteArray()
+        val agreement = generateAgreement()
+        return agreement.calculateAgreement(pub).toByteArray()
     }
 
-    fun proceedTest(exchange: DHExchange, ownerPub: ByteArray, ownerPriv: ByteArray) {
+    fun proceedTest(exchange: DHExchange, ownerPub: ByteArray, ownerPriv: ByteArray): ByteArray {
         params = DHParameters(BigInteger(1, exchange.p), BigInteger(1, exchange.g))
         val pub = DHPublicKeyParameters(BigInteger(1, exchange.pub), params)
 
@@ -80,12 +79,13 @@ actual class DiffieHellman {
             DHPrivateKeyParameters(BigInteger(1, ownerPriv), params)
         )
 
-        agreement = generateAgreement()
-        key = agreement?.calculateAgreement(pub)?.toByteArray()
+        val agreement = generateAgreement()
+        return agreement.calculateAgreement(pub).toByteArray()
     }
 
-    actual fun finalize(exchange: DHExchange) {
+    actual fun finalize(exchange: DHExchange): ByteArray {
         val pub = DHPublicKeyParameters(BigInteger(exchange.pub), params)
-        key = agreement?.calculateAgreement(pub)?.toByteArray()
+        val agreement = generateAgreement()
+        return agreement.calculateAgreement(pub).toByteArray()
     }
 }

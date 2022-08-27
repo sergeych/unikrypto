@@ -18,9 +18,9 @@ internal class DiffieHellmanTest {
         val bob = DiffieHellman()
 
         val exchangeFromAlice = DHExchange(alicePublic.decodeBase64(), p.decodeBase64(), g.decodeBase64())
-        bob.proceedTest(exchangeFromAlice, bobPublic.decodeBase64(), bobPrivate.decodeBase64())
+        val bobKey = bob.proceedTest(exchangeFromAlice, bobPublic.decodeBase64(), bobPrivate.decodeBase64())
 
-        assertTrue(bob.key!!.encodeToBase64() == "K9vzuRm1ZKaQ8u8yO9nKBkVkDPLkatp7GqsKTcjoWTQwXqSk6vYG0YJqXquLMcW9X1jPBZFSf3+629Hg0ggz7g==")
+        assertTrue(bobKey.encodeToBase64() == "K9vzuRm1ZKaQ8u8yO9nKBkVkDPLkatp7GqsKTcjoWTQwXqSk6vYG0YJqXquLMcW9X1jPBZFSf3+629Hg0ggz7g==")
     }
 
     @Test
@@ -36,20 +36,26 @@ internal class DiffieHellmanTest {
 
         val bobPublicKey = "WyAfYODQQCqtFG1sy3+PZB2CsDtYf1u7VUf5bRRtb8mLvuSmZDKU8gKqkY8NHVe2Z29zH+e0IUVWE7tvUHgRbA=="
         val exchangeFromBob = DHExchange(bobPublicKey.decodeBase64(), p.decodeBase64(), g.decodeBase64())
-        alice.finalize(exchangeFromBob)
+        val aliceKey = alice.finalize(exchangeFromBob)
 
-        assertTrue(alice.key!!.encodeToBase64() == "UC8DsF26bmB5tNKpQ3PTxEEwt/meUAYaOhnaQomh63oepluMEdNfAAPtmRae0txtlU8U/fOyuRqeNAJknx6Y0Q==")
+        assertTrue(aliceKey.encodeToBase64() == "UC8DsF26bmB5tNKpQ3PTxEEwt/meUAYaOhnaQomh63oepluMEdNfAAPtmRae0txtlU8U/fOyuRqeNAJknx6Y0Q==")
     }
 
     @Test
     fun DiffieHellmanJava() {
         val alice = DiffieHellman()
         val bob = DiffieHellman()
+        val cindy = DiffieHellman()
 
         alice.init()
-        bob.proceed(alice.getExchange())
-        alice.finalize(bob.getExchange())
+        val bobKey = bob.proceed(alice.getExchange())
+        val aliceBobKey = alice.finalize(bob.getExchange())
 
-        assertTrue(bob.key != null && bob.key?.encodeToBase64() == alice.key?.encodeToBase64())
+        val cindyKey = cindy.proceed(alice.getExchange())
+        val aliceCindyKey = alice.finalize(cindy.getExchange())
+
+        assertTrue(bobKey.encodeToBase64() == aliceBobKey.encodeToBase64())
+        assertTrue(cindyKey.encodeToBase64() == aliceCindyKey.encodeToBase64())
+        assertTrue(!bobKey.contentEquals(cindyKey))
     }
 }

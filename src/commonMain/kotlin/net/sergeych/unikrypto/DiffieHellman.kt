@@ -13,9 +13,8 @@ data class DHExchange(
 )
 
 expect class DiffieHellman {
-    var key: ByteArray?
     fun getExchange(): DHExchange
     fun init()
-    fun proceed(exchange: DHExchange)
-    fun finalize(exchange: DHExchange)
+    fun proceed(exchange: DHExchange): ByteArray
+    fun finalize(exchange: DHExchange): ByteArray
 }

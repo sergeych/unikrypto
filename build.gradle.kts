@@ -66,6 +66,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
                 api("net.sergeych:boss-serialization-mp:[0.1.2-SNAPSHOT,)")
                 implementation("net.sergeych:mp_stools:1.2.3-SNAPSHOT")
+                implementation("org.bouncycastle:bcprov-jdk15on:1.62")
             }
         }
         val commonTest by getting {
@@ -81,7 +82,7 @@ kotlin {
         val jvmTest by getting
         val jsMain by getting {
             dependencies {
-                implementation(npm("unicrypto", "1.12.2"))
+                implementation(npm("unicrypto", "1.14.0"))
             }
         }
         val jsTest by getting {

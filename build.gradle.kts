@@ -62,11 +62,10 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+                api("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
-                api("net.sergeych:boss-serialization-mp:[0.1.2-SNAPSHOT,)")
-                implementation("net.sergeych:mp_stools:1.2.3-SNAPSHOT")
-                implementation("org.bouncycastle:bcprov-jdk15on:1.62")
+                api("net.sergeych:boss-serialization-mp:[0.1.3-SNAPSHOT,)")
+                api("net.sergeych:mp_stools:1.2.3-SNAPSHOT")
             }
         }
         val commonTest by getting {

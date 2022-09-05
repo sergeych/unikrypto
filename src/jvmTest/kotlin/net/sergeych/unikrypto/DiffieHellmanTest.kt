@@ -54,8 +54,8 @@ internal class DiffieHellmanTest {
         val cindyKey = cindy.proceed(alice.getExchange())
         val aliceCindyKey = alice.finalize(cindy.getExchange())
 
-        assertTrue(bobKey.encodeToBase64() == aliceBobKey.encodeToBase64())
-        assertTrue(cindyKey.encodeToBase64() == aliceCindyKey.encodeToBase64())
+        assertTrue(bobKey contentEquals  aliceBobKey)
+        assertTrue(cindyKey contentEquals aliceCindyKey)
         assertTrue(!bobKey.contentEquals(cindyKey))
     }
 }

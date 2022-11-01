@@ -98,7 +98,7 @@ As further Universa development will be performed in kotlin on browser, android,
 
 ## Thanks
 
-- _QuickBirdEng_ for [CRC8](https://github.com/QuickBirdEng/crc-kotlin)
+- _QuickBirdEng_ for [native kotlin CRC implementations](https://github.com/QuickBirdEng/crc-kotlin)
 
 ## LICENSE
 

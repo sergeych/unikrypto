@@ -168,8 +168,7 @@ object Safe58 {
      * against mistypes and like). Use [decodeWithCrc] to check and decode.
      */
     fun encodeWithCrc(data: ByteArray): String {
-        val crc = CRC8().also { it.update(data) }.value
-        return encode( byteArrayOf(crc.toByte()) + data )
+        return encode( byteArrayOf(CRC.crc8(data).toByte()) + data )
     }
 
     class InvalidCrcException: Exception("CRC does not match")
@@ -184,7 +183,7 @@ object Safe58 {
         val all = decode(encoded)
         val data = all.sliceArray(1 until all.size)
         val crc1 = all.first().toUByte()
-        val crc2 = CRC8().also { it.update(data) }.value
+        val crc2 = CRC.crc8(data)
         if( crc1 != crc2 ) throw InvalidCrcException()
         return data
     }

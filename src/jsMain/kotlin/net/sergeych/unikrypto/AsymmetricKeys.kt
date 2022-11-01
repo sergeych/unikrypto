@@ -52,6 +52,14 @@ actual val AsymmetricKeys: AsymmetricKeysProvider = object : AsymmetricKeysProvi
 
     override suspend fun decryptPrivateKey(data: ByteArray, password: String): PrivateKey
         = PrivateKeyImpl(Unicrypto.PrivateKey.unpackWithPassword(data.toUint8Array(), password).await())
+
+    override suspend fun unpackKeyId(packedKeyId: ByteArray): KeyIdentity {
+        return AddressId(packedKeyId)
+    }
+
+    override suspend fun unpackKeyId(packedKeyIdString: String): KeyIdentity {
+        return AddressId(decodeAddress(packedKeyIdString))
+    }
 }
 
 val VerifyingKey.universaKey: Unicrypto.PublicKey get() = (this as PublicKeyImpl).key

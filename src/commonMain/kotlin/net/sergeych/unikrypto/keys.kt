@@ -288,6 +288,9 @@ interface AsymmetricKeysProvider {
      * supported. Could be slow in browsers that do not support wasm. USes worker in browsers when supported.
      */
     suspend fun decryptPrivateKey(data: ByteArray, password: String): PrivateKey
+
+    suspend fun unpackKeyId(packedKeyId: ByteArray): KeyIdentity
+    suspend fun unpackKeyId(packedKeyIdString: String): KeyIdentity
 }
 
 

@@ -56,6 +56,13 @@ actual val AsymmetricKeys: AsymmetricKeysProvider = object : AsymmetricKeysProvi
     override suspend fun decryptPrivateKey(data: ByteArray, password: String): PrivateKey
             = PrivateKeyImpl(com.icodici.crypto.PrivateKey.unpackWithPassword(data, password))
 
+    override suspend fun unpackKeyId(packedKeyId: ByteArray): KeyIdentity {
+        return AddressId(packedKeyId)
+    }
+    override suspend fun unpackKeyId(packedKeyIdString: String): KeyIdentity {
+        return AddressId(decodeAddress(packedKeyIdString))
+    }
+
 }
 
 val SigningKey.universaKey: com.icodici.crypto.PrivateKey get() = (this as PrivateKeyImpl).key

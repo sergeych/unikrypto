@@ -48,6 +48,20 @@ class KeyIdTests {
         val x = BossEncoder.encode(key.id).decodeBoss<KeyIdentity>()
         assertEquals(key.id, x)
     }
+    @Test
+    fun testKeyIdUnpacking() = runTest {
+        val key = AsymmetricKeys.generate(2048)
+        println(1)
+
+        // TODO: check pack/unpack key address as string and binary!
+        val packed = key.id.id
+        val unpacked = AsymmetricKeys.unpackKeyId(packed)
+        println(2)
+        assertEquals(key.id, unpacked)
+        val unpacked2 = AsymmetricKeys.unpackKeyId(key.id.asString)
+        println(3)
+        assertEquals(key.id, unpacked2)
+    }
 
     @Serializable
     class TBytes3(val data: ByteArray)

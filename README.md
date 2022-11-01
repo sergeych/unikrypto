@@ -79,6 +79,10 @@ Sometimes it is convenient to switch to encrypted storage on the fly. In this ca
 
 ## Latest Changes
 
+### 1.2.1-SNAPSHOT
+- many fixes and improvements
+- support for key address decoding in `AsymmetricKeys` provider.
+
 ### 1.1.0-SNAPSHOT
 
 - Introduced `AheadPrivateKeyGenerator` class to generate private keys in bacground ahead of time
@@ -91,6 +95,10 @@ Sometimes it is convenient to switch to encrypted storage on the fly. In this ca
 ## Roadmap
 
 As further Universa development will be performed in kotlin on browser, android, desktop, server and (soon) iOS platforms, all new cryptographic primitives and functions will be added to this library ot be shared with all platforms and the society.
+
+## Thanks
+
+- _QuickBirdEng_ for [CRC8](https://github.com/QuickBirdEng/crc-kotlin)
 
 ## LICENSE
 

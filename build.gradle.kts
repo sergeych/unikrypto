@@ -7,16 +7,17 @@ plugins {
 }
 
 group = "net.sergeych"
-version = "1.2.0-SNAPSHOT"
+version = "1.2.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven("https://maven.universablockchain.com")
 }
 
-configurations.all {
-    resolutionStrategy.cacheChangingModulesFor(30, "seconds")
-}
+//configurations.all {
+//    resolutionStrategy.cacheChangingModulesFor(30, "seconds")
+//}
 
 kotlin {
     jvm {

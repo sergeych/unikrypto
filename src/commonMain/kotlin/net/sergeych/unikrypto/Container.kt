@@ -6,7 +6,6 @@ import net.sergeych.boss_serialization_mp.BossEncoder
 import net.sergeych.boss_serialization_mp.decodeBoss
 import net.sergeych.mp_logger.LogTag
 import net.sergeych.mp_logger.Loggable
-import net.sergeych.mp_logger.debug
 
 /**
  * the serializable space effective crypto-container allowing to encrypt content for one or more keys of any
@@ -20,57 +19,106 @@ import net.sergeych.mp_logger.debug
  * first appearance will be coded with as little as 1 byte at first, or 2 and maybe even 3 if there are too many
  * strings ;)
  *
- * To create container, use
+ * Important feature of the container is ability to re-encrypt it using any one known key, keeping it available
+ * to all other keys unknown at the update time.
+ *
+ * Usually all you need is to call companion object methods.
  */
 @Serializable
 sealed class Container {
     abstract val keyIds: Set<KeyIdentity>
     abstract fun decrypt(key: DecryptingKey): ByteArray
 
-    @Serializable
-    @SerialName("single")
-    data class Single(val keyId: KeyIdentity, val ciphertext: ByteArray): Container() {
-        override val keyIds by lazy { setOf(keyId) }
-        override fun decrypt(key: DecryptingKey): ByteArray = key.etaDecrypt(ciphertext)
+    abstract fun update(keyRing: IdentifiableKeyring, newData: ByteArray): ByteArray?
+
+    fun selectKeys(keyRing: IdentifiableKeyring) = keyRing.getAllMatching<DecryptingKey>(keyIds)
+
+    fun decrypt(keyRing: IdentifiableKeyring): Pair<IdentifiableKey, ByteArray>? {
+        for (k in selectKeys(keyRing)) {
+            try {
+                return k to decrypt(k)
+            } catch (x: Throwable) {
+                //
+            }
+        }
+        return null
     }
 
     @Serializable
-    data class EncryptedKey(val id: KeyIdentity,val encryptedKey: ByteArray)
+    @SerialName("single")
+    data class Single(val keyId: KeyIdentity, val ciphertext: ByteArray) : Container() {
+        override val keyIds by lazy { setOf(keyId) }
+        override fun decrypt(key: DecryptingKey): ByteArray = key.etaDecrypt(ciphertext)
+
+        override fun update(keyRing: IdentifiableKeyring, newData: ByteArray): ByteArray? {
+            return decrypt(keyRing)?.let { (k, _) ->
+                if (k !is EncryptingKey) throw IllegalArgumentException("key is not suitable for re-encryption")
+                encryptData(newData, k)
+            }
+        }
+    }
+
+    @Serializable
+    data class EncryptedKey(val id: KeyIdentity, val encryptedKey: ByteArray)
 
     @Serializable
     @SerialName("multi")
-    data class Multiple(val keys: List<EncryptedKey>,val ciphertext: ByteArray): Container() {
+    data class Multiple(val keys: List<EncryptedKey>, val ciphertext: ByteArray) : Container() {
         override val keyIds: Set<KeyIdentity> by lazy { keys.map { it.id }.toSet() }
 
         override fun decrypt(key: DecryptingKey): ByteArray {
-            for( k in keys) {
-                if( k.id == key.id ) {
-                    val dataKey = SymmetricKeys.create( key.etaDecrypt(k.encryptedKey), k.id)
+            for (k in keys) {
+                if (k.id == key.id) {
+                    val dataKey = SymmetricKeys.create(key.etaDecrypt(k.encryptedKey), k.id)
                     return dataKey.etaDecrypt(ciphertext)
                 }
             }
             throw IllegalArgumentException("the key does not open this container")
         }
 
+        override fun update(keyRing: IdentifiableKeyring, newData: ByteArray): ByteArray? {
+            for (k in keys) {
+                for (key in keyRing[k.id]) {
+                    if (key is DecryptingKey) {
+                        val dataKey = SymmetricKeys.create(key.etaDecrypt(k.encryptedKey), k.id)
+                        return BossEncoder.encode(Multiple(keys, dataKey.etaEncrypt(newData)) as Container)
+                    }
+                }
+            }
+            return null
+        }
     }
+
+
+//            return decrypt(keyRing)?.let { (key,_) ->
+//                if(key !is EncryptingKey) throw IllegalArgumentException("key is not suitable for re-encryption")
+//                if(key !is DecryptingKey) throw IllegalArgumentException("key is not suitable for re-encryption (not decrypting!)")
+//                val dataKey = SymmetricKeys.create( key.etaDecrypt(k.encryptedKey), k.id)
+//                encryptData(newData,k)
+//            }
+//        }
+//    }
 
     companion object : Loggable by LogTag("CRCON") {
         /**
-         * Please use [encrypt] instead!
+         * Create single-key container. Most often you should call [encrypt] instead.
          */
-        inline fun <reified T>single(payload: T,key: EncryptingKey): ByteArray {
-            return BossEncoder.encode(Single(key.id, key.etaEncrypt(BossEncoder.encode(payload))) as Container)
+        fun single(payload: ByteArray, key: EncryptingKey): ByteArray {
+            return BossEncoder.encode(Single(key.id, key.etaEncrypt(payload)) as Container)
         }
 
         /**
-         * Please use [encrypt] instead!
+         * Create nultiple keys container event with one key. Most often you should not call it but
+         * use [encrypt] instead.
          */
-        inline fun <reified T>multi(payload: T,keys: List<EncryptingKey>): ByteArray {
+        fun multi(payload: ByteArray, keys: List<EncryptingKey>): ByteArray {
             val dataKey = SymmetricKeys.random()
-            return BossEncoder.encode(Multiple(
-                keys.map { EncryptedKey(it.id, it.etaEncrypt(dataKey.packed)) },
-                dataKey.etaEncrypt(BossEncoder.encode(payload))
-            ) as Container)
+            return BossEncoder.encode(
+                Multiple(
+                    keys.map { EncryptedKey(it.id, it.etaEncrypt(dataKey.packed)) },
+                    dataKey.etaEncrypt(payload)
+                ) as Container
+            )
         }
 
         /**
@@ -81,12 +129,33 @@ sealed class Container {
          * @param keys one or more keys to encrypt with.
          * @return encryped and packed container
          */
-        inline fun <reified T>encrypt(payload: T,vararg keys: EncryptingKey) =
-            when(keys.size) {
+        inline fun <reified T> encrypt(payload: T, vararg keys: EncryptingKey): ByteArray =
+            encryptData(BossEncoder.encode(payload), *keys)
+
+        /**
+         * Encrypt payload  as is, without boss serialization. See [encrypt] for details.
+         * @return encrypted packed container
+         */
+        fun encryptData(payload: ByteArray, vararg keys: EncryptingKey): ByteArray =
+            when (keys.size) {
                 0 -> throw IllegalArgumentException("provide at least one key")
                 1 -> single(payload, keys[0])
                 else -> multi(payload, keys.toList())
             }
+
+        /**
+         * Update packed container using proper key in the ring with a new payload. This function os useful
+         * when the container could be multiple (but it works with any) and we know only one of its keys,
+         * but want to change the data. It is possible as any of the keys could be used to re-encrypt data
+         * that _will be available to all other keys_.
+         * @param payload packed container
+         * @param keyRing keyring which should contain at least one key that can decrypt the contatiner
+         * @param packed new payload to encrypt
+         * @return packed encrypted container with new payload or null if keyring can't decrypt it
+         */
+        inline fun <reified T> update(packed: ByteArray, keyRing: IdentifiableKeyring, payload: T): ByteArray? {
+            return packed.decodeBoss<Container>().update(keyRing, BossEncoder.encode(payload))
+        }
 
         /**
          * Try to decrypt a container using some keys.
@@ -94,30 +163,15 @@ sealed class Container {
          * @param keys to try to open the container.
          * @return the decrypted paylaod on success or null if no keys could open it.
          */
-        inline fun <reified T>decrypt(packed: ByteArray,vararg keys: DecryptingKey): T? =
+        inline fun <reified T> decrypt(packed: ByteArray, vararg keys: DecryptingKey): T? =
             decrypt<T>(packed, Keyring(*keys))
 
         /**
          * decrypt the container using leys in a keyring.
          * @return recrypted payload or null if no key from a keyring can open it.
          */
-        inline fun <reified T>decrypt(packed: ByteArray,ring: IdentifiableKeyring): T? {
-            val container = packed.decodeBoss<Container>()
-            println("\n--\n")
-            for( id in container.keyIds ) {
-                if (id in ring)
-                    for (key in ring[id]) {
-                        if( key is DecryptingKey ) {
-                            try {
-                                return container.decrypt(key).decodeBoss()
-                            }
-                            catch(x: Exception) {
-                                debug { "unexpected error while decrypting with matching key: $x" }
-                            }
-                        }
-                    }
-            }
-            return null
+        inline fun <reified T> decrypt(packed: ByteArray, ring: IdentifiableKeyring): T? {
+            return packed.decodeBoss<Container>().decrypt(ring)?.second?.decodeBoss<T>()
         }
     }
 }

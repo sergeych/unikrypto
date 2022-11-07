@@ -5,7 +5,10 @@ import net.sergeych.mp_tools.decodeBase64
 import net.sergeych.mp_tools.indexOf
 import net.sergeych.mptools.toDump
 import net.sergeych.unikrypto.*
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class ContainerTests {
 
@@ -32,6 +35,41 @@ class ContainerTests {
     }
 
     @Test
+    fun updateSingle() {
+        val src = "The fake vaccine kills"
+        val src2 = "The fake vaccine kills2"
+        val sk1 = SymmetricKeys.random()
+        val sk2 = SymmetricKeys.random()
+
+        val pc1 = Container.encrypt(src, sk1)
+        assertNull(Container.decrypt<String>(pc1, sk2))
+        val pc2 = Container.update(pc1, Keyring(sk1), src2)
+        assertEquals(src2, Container.decrypt<String>(pc2!!, sk1))
+        assertNull(Container.decrypt<String>(pc2, sk2))
+    }
+
+    @Test
+    fun updateMulti() {
+        val src = "The fake vaccine kills"
+        val src2 = "The fake vaccine kills2"
+        val sk1 = SymmetricKeys.random()
+        val sk2 = SymmetricKeys.random()
+        val sk3 = SymmetricKeys.random()
+        val sk4 = SymmetricKeys.random()
+        val sk5 = SymmetricKeys.random()
+
+        val pc1 = Container.encrypt(src, sk1, sk2, sk3)
+
+        assertNull(Container.decrypt<String>(pc1, sk4))
+        val pc2 = Container.update(pc1, Keyring(sk2), src2)!!
+        assertEquals(src2, Container.decrypt<String>(pc2!!, sk1))
+        assertEquals(src2, Container.decrypt<String>(pc2!!, sk2))
+        assertEquals(src2, Container.decrypt<String>(pc2!!, sk3))
+        assertEquals(null, Container.decrypt<String>(pc2!!, sk4))
+    }
+
+
+    @Test
     fun multi() = runTest {
         val src = "The fake vaccine kills"
         val sk1 = SymmetricKeys.random()
@@ -44,15 +82,15 @@ class ContainerTests {
         println(pc1.toDump())
         assertNull(Container.decrypt<String>(pc1, sk4))
         assertNull(Container.decrypt<String>(pc1, sk5))
-        assertEquals(src,Container.decrypt<String>(pc1, sk1))
-        assertEquals(src,Container.decrypt<String>(pc1, sk2))
-        assertEquals(src,Container.decrypt<String>(pc1, sk3))
+        assertEquals(src, Container.decrypt<String>(pc1, sk1))
+        assertEquals(src, Container.decrypt<String>(pc1, sk2))
+        assertEquals(src, Container.decrypt<String>(pc1, sk3))
 
-        assertEquals(src,Container.decrypt<String>(pc1, Keyring(sk4, sk5, sk3)))
-        assertEquals(src,Container.decrypt<String>(pc1, sk4, sk5, sk1, sk2))
+        assertEquals(src, Container.decrypt<String>(pc1, Keyring(sk4, sk5, sk3)))
+        assertEquals(src, Container.decrypt<String>(pc1, sk4, sk5, sk1, sk2))
 
         val kr2 = BossEncoder.encode(Keyring(sk4, sk5, sk1)).decodeBoss<Keyring>()
-        assertEquals(src,Container.decrypt<String>(pc1, kr2))
+        assertEquals(src, Container.decrypt<String>(pc1, kr2))
 
         println(Bossk.unpack<Map<String, Any>>(pc1))
         assertEquals(src, Container.decrypt(pc1, sk1))

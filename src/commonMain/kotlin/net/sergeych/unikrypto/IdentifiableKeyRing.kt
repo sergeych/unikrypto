@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package net.sergeych.unikrypto
 
 import kotlinx.serialization.Serializable
@@ -48,6 +50,11 @@ abstract class IdentifiableKeyring {
         var result = keys.hashCode()
         result = 31 * result + size
         return result
+    }
+
+    inline fun <reified T: IdentifiableKey>getAllMatching(ids: Collection<KeyIdentity>): List<T> {
+        val idSet = if( ids is Set<KeyIdentity>) ids else ids.toSet()
+        return keys.filter { it.id in idSet && it is T  } as List<T>
     }
 }
 

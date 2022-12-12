@@ -85,5 +85,16 @@ class SymmetricKeyTest {
 
     }
 
+    @Test
+    fun symmetricKeyEtaTest() {
+        val src = "Hello world"
+        val sk1 = SymmetricKeys.random()
+
+        val packed1 = sk1.etaEncrypt(src)
+        val packed2 = sk1.etaEncrypt(src)
+
+        assertFalse { packed1 contentEquals packed2 }
+    }
+
 
 }

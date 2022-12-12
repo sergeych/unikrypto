@@ -23,9 +23,38 @@ import net.sergeych.mp_logger.Loggable
  * to all other keys unknown at the update time.
  *
  * Usually all you need is to call companion object methods.
+ *
+ * Please note that methods throws following excetpions on typical failures:
+ *
+ * - [Container.Error] if it fails to decode and decrypt the container, more precisely
+ *   its chidlred [Container.DecryptionError] if decryption failed and [Container.StructureError]
+ *   if it fails to decode the container inner structure.
+ *
+ * - `IllegalArgumentException` if there is no suitable key in the provided keyring.
  */
+@Suppress("OPT_IN_USAGE")
 @Serializable
 sealed class Container {
+
+
+    /**
+     * Gegenral error while unpacking and decrypting the container
+     */
+    open class Error(reason: String = "failed to process the container") : IllegalArgumentException(reason)
+
+    /**
+     * Decryption failed
+     */
+    class DecryptionError : Error("failed to decrypt the continer")
+
+    /**
+     * Packed container seems to be corrupted
+     */
+    class StructureError : Error("inllegal container structure")
+
+    /**
+     * Key Ids for the key that can dectypt the container
+     */
     abstract val keyIds: Set<KeyIdentity>
     abstract fun decrypt(key: DecryptingKey): ByteArray
 
@@ -38,7 +67,7 @@ sealed class Container {
             try {
                 return k to decrypt(k)
             } catch (x: Throwable) {
-                //
+                throw DecryptionError()
             }
         }
         return null
@@ -48,7 +77,12 @@ sealed class Container {
     @SerialName("single")
     data class Single(val keyId: KeyIdentity, val ciphertext: ByteArray) : Container() {
         override val keyIds by lazy { setOf(keyId) }
-        override fun decrypt(key: DecryptingKey): ByteArray = key.etaDecrypt(ciphertext)
+        override fun decrypt(key: DecryptingKey): ByteArray = try {
+            key.etaDecrypt(ciphertext)
+        }
+        catch(x: Exception) {
+            throw x
+        }
 
         override fun update(keyRing: IdentifiableKeyring, newData: ByteArray): ByteArray? {
             return decrypt(keyRing)?.let { (k, _) ->
@@ -70,7 +104,12 @@ sealed class Container {
             for (k in keys) {
                 if (k.id == key.id) {
                     val dataKey = SymmetricKeys.create(key.etaDecrypt(k.encryptedKey), k.id)
-                    return dataKey.etaDecrypt(ciphertext)
+                    try {
+                        return dataKey.etaDecrypt(ciphertext)
+                    }
+                    catch(x: Exception) {
+                        throw DecryptionError()
+                    }
                 }
             }
             throw IllegalArgumentException("the key does not open this container")
@@ -171,7 +210,31 @@ sealed class Container {
          * @return recrypted payload or null if no key from a keyring can open it.
          */
         inline fun <reified T> decrypt(packed: ByteArray, ring: IdentifiableKeyring): T? {
-            return packed.decodeBoss<Container>().decrypt(ring)?.second?.decodeBoss<T>()
+            return decryptAsBytes(packed, ring)?.decodeBoss<T>()
         }
+
+        fun decryptAsBytes(packed: ByteArray, ring: IdentifiableKeyring): ByteArray? =
+            protect {
+                packed.decodeBoss<Container>().decrypt(ring)?.second
+            }
+
+        fun decryptAsBytes(packed: ByteArray, vararg keys: DecryptingKey): ByteArray? =
+            protect {
+                packed.decodeBoss<Container>().decrypt(Keyring(*keys))?.second
+            }
+
+        private inline fun <reified T> protect(f: () -> T): T =
+            try {
+                f()
+            }
+            catch(x: DecryptionError) {
+                throw x
+            }
+            catch (x: Exception) {
+                println(x)
+                println(x::class.simpleName)
+                x.printStackTrace()
+                throw StructureError()
+            }
     }
 }

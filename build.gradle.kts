@@ -1,13 +1,13 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 plugins {
-    kotlin("multiplatform") version "1.7.20"
-    kotlin("plugin.serialization") version "1.7.20"
+    kotlin("multiplatform") version "1.7.10"
+    kotlin("plugin.serialization") version "1.7.10"
     `maven-publish`
 }
 
 group = "net.sergeych"
-version = "1.2.1-SNAPSHOT"
+version = "1.2.2-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -66,7 +66,7 @@ kotlin {
                 api("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
                 api("net.sergeych:boss-serialization-mp:[0.1.3-SNAPSHOT,)")
-                api("net.sergeych:mp_stools:1.2.3-SNAPSHOT")
+                api("net.sergeych:mp_stools:[1.3.2-SNAPSHOT,)")
             }
         }
         val commonTest by getting {

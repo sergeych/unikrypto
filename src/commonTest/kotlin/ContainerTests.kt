@@ -5,6 +5,7 @@ import net.sergeych.mp_tools.decodeBase64
 import net.sergeych.mp_tools.indexOf
 import net.sergeych.mptools.toDump
 import net.sergeych.unikrypto.*
+import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -109,6 +110,41 @@ class ContainerTests {
         assertTrue { ki2 in s }
         assertTrue { ki3 in s }
         assertTrue { ki3_1 in s }
+    }
+
+    @Test
+    fun wrongContainerUnpack() {
+        val src = "The fake vaccine kills"
+        val sk1 = SymmetricKeys.random()
+        val sk2 = SymmetricKeys.random()
+
+        val pc1 = Container.encrypt(src, sk1)
+
+        val pc2 = BossEncoder.encode(
+            Container.Single(sk1.id, sk1.etaEncrypt(
+                BossEncoder.encode(src))) as Container
+        )
+
+
+        assertEquals(src, Container.decrypt<String>(pc1, sk1))
+
+        assertEquals(src, Container.decrypt<String>(pc2, sk1))
+
+        // Faulure 1: Not a container
+        var x = assertThrows<Container.StructureError> {
+            Container.decryptAsBytes(Random.Default.nextBytes(pc1.size))
+        }
+//        println(x)
+        // Faulure 2: Container but wrong ciphertext
+        val pc3 = BossEncoder.encode(
+            Container.Single(sk1.id, sk2.etaEncrypt(
+                BossEncoder.encode(src))) as Container
+        )
+        assertThrows<Container.DecryptionError> {
+            Container.decryptAsBytes(pc3, sk1)
+        }
+        // Failre 3: paylaod is not a boss
+
     }
 }
 

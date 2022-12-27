@@ -231,9 +231,6 @@ sealed class Container {
                 throw x
             }
             catch (x: Exception) {
-                println(x)
-                println(x::class.simpleName)
-                x.printStackTrace()
                 throw StructureError()
             }
     }

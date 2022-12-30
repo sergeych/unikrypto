@@ -4,6 +4,7 @@ import net.sergeych.mp_tools.decodeBase64
 import runTest
 import kotlin.experimental.xor
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -42,6 +43,18 @@ class AsymmetricKeyJsTest {
     @Test
     fun testGenerate() = runTest {
         val pair = AsymmetricKeys.generate(2048)
+    }
+
+    @Test
+    fun testKeyId() = runTest {
+        val x =
+            "JgAcAQABvIDL1TsAhGRNgTvw5NW0CUBbfuvfs1AbxQ4lqdfYDIWuqu4yUINpVPFuW2J1IYYEUp536maBjM6753gWoysuVKhqLPwyZK0CTD7QK44dL0HTtTVuhri465PlUtdCg1RFoAMsUovumrAvahMutKra31aFt3eMj3D7K51pId6MyA8Ei7yAu3HtALLUDCQGX3AY7/z74dPNSgATyVgYiq0IJfmb0uspPmHtx1GA8S67xvH6L7wp79Prd1DJ2E8ZLKgNpFj/WlSN+dNGWEN0GVN7oxNnEtjxTHUJY0WRzvw7wJuEDfjQYBn+qcWBboRytJ6xkGNlp992FwQJuMOTOSi0rIRmTmE="
+                .decodeBase64()
+        val key = AsymmetricKeys.unpackPrivate(x)
+        val privateKeyId = key.id
+        val publicKeyId = key.publicKey.id
+
+        assertEquals(privateKeyId, publicKeyId)
     }
 
 //    @Test

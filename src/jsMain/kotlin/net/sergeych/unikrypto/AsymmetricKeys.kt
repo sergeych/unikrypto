@@ -8,7 +8,7 @@ import org.khronos.webgl.Uint8Array
 private val defaultOAEPOptions = OAEPOptions()
 
 internal class PublicKeyImpl(val key: Unicrypto.PublicKey) : PublicKey() {
-    override val id: KeyIdentity by lazy { BytesId(key.longAddress.asBinary.toByteArray()) }
+    override val id: KeyIdentity by lazy { AddressId(KeyAddressJs(key.longAddress)) }
 
     override val bitStrength: Int by lazy { key.getBitStrength() }
 

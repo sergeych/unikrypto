@@ -4,6 +4,10 @@
 
 > __RC2 stage__ used in production systems.
 
+## Current version
+
+We recommend `1.2.4-rc1`
+
 __1.2.*__ version are to use with __kotlin 1.7__. 
 
 A new generation of cryptographic primitives that origins in the universa projects now in form of kotlin multiplatform library. It effectively works in 
@@ -69,6 +73,10 @@ suspend fun sampleSign(text: String): Pair<PrivateKey,ByteArray> {
 
 **serialization-aware SignedRecord**: easy to use with your serializable payload
 
+**keyrings** for any type of keys to work simultaneously 
+
+**containers** serialization-firendly multikey containers based on keyrings.
+
 **Encrypted KVStorages** easy to use and really safe even in browser target. See below.
 
 ### Encrtypted storages
@@ -78,6 +86,14 @@ The KV storages that uses serialization and boss encoders are part of [boss-seri
 Sometimes it is convenient to switch to encrypted storage on the fly. In this case use [BindableBinaryStorage] included in the library, it allows changing a backing storage on the fly.
 
 ## Latest Changes
+
+### 1.2.4-rc2
+- improved and fixed key addresses suuport for asymmetrics
+- added key addresses, same as in Universa
+- added keyrings
+- added containers that also support non-identifiable symmetric keys
+- added Diffie-Hellman support
+- added Safe58 support with crc-guarded contents
 
 ### 1.2.1-SNAPSHOT
 - many fixes and improvements

@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "net.sergeych"
-version = "1.2.3-SNAPSHOT"
+version = "1.2.4-SNAPSHOT"
 
 repositories {
     mavenLocal()
@@ -57,9 +57,11 @@ kotlin {
 //        listOf(jvm(), js()).map { it.name } + "kotlinMultiplatform"
 
     sourceSets {
-//        all {
-//            languageSettings.optIn("kotlin.RequiresOptIn")
-//        }
+        all {
+            languageSettings.optIn("kotlin.ExperimentalUnsignedTypes")
+            languageSettings.optIn("kotlinx.serialization.ExperimentalSerializationApi")
+            languageSettings.optIn("kotlinx.coroutines.flow.DelicateCoroutinesApi")
+        }
         val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
@@ -82,7 +84,7 @@ kotlin {
         val jvmTest by getting
         val jsMain by getting {
             dependencies {
-                implementation(npm("unicrypto", "1.14.0"))
+                implementation(npm("unicrypto", "1.14.1"))
             }
         }
         val jsTest by getting {
@@ -110,10 +112,12 @@ kotlin {
         }
         repositories {
             maven {
+                val mavenUser: String by project
+                val mavenPassword: String by project
                 url = uri("https://maven.universablockchain.com/")
                 credentials {
-                    username = System.getenv("maven_user")
-                    password = System.getenv("maven_password")
+                    username = mavenUser
+                    password = mavenPassword
                 }
             }
         }

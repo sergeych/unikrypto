@@ -16,6 +16,7 @@ import net.sergeych.mp_logger.info
  * @param bitStrength key bit strength of the generated keys
  * @param bufferSize how many ready keys to kee ready in buffer
  */
+@OptIn(DelicateCoroutinesApi::class)
 @Suppress("unused")
 class AheadPrivateKeyGenerator(val bitStrength: Int, bufferSize: Int) : LogTag("AKGEN") {
 

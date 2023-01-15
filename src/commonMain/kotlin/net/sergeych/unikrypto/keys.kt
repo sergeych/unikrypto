@@ -9,6 +9,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import net.sergeych.bossk.FormatException
+import net.sergeych.mp_tools.encodeToBase64Compact
 import kotlin.random.Random
 
 /**
@@ -157,6 +158,8 @@ abstract class SymmetricKey(override val id: KeyIdentity): EncryptingKey, Decryp
         fun SymmetricKey() = SymmetricKeys.random()
     }
 
+    override fun toString(): String =
+        "SymmetricKey(${keyBytes.encodeToBase64Compact()}"
 }
 
 /**

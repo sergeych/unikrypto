@@ -63,11 +63,23 @@ sealed class Container {
     fun selectKeys(keyRing: IdentifiableKeyring) = keyRing.getAllMatching<DecryptingKey>(keyIds)
 
     fun decrypt(keyRing: IdentifiableKeyring): Pair<IdentifiableKey, ByteArray>? {
+        // Fast search: look for a key that shurely should
         for (k in selectKeys(keyRing)) {
             try {
                 return k to decrypt(k)
             } catch (x: Throwable) {
-                throw DecryptionError()
+                // This means our key is not ok. It a rare but possible collision
+            }
+        }
+        // some symmetric key can sometimes decrypt even if their ID is wrong, so
+        // we check them all:
+        for (k in keyRing.keys) {
+            if (k is SymmetricKey) {
+                try {
+                    return k to decrypt(k)
+                } catch (x: Throwable) {
+                    // it's ok. we just tried
+                }
             }
         }
         return null
@@ -79,9 +91,8 @@ sealed class Container {
         override val keyIds by lazy { setOf(keyId) }
         override fun decrypt(key: DecryptingKey): ByteArray = try {
             key.etaDecrypt(ciphertext)
-        }
-        catch(x: Exception) {
-            throw x
+        } catch (x: Exception) {
+            throw DecryptionError()
         }
 
         override fun update(keyRing: IdentifiableKeyring, newData: ByteArray): ByteArray? {
@@ -102,13 +113,15 @@ sealed class Container {
 
         override fun decrypt(key: DecryptingKey): ByteArray {
             for (k in keys) {
-                if (k.id == key.id) {
-                    val dataKey = SymmetricKeys.create(key.etaDecrypt(k.encryptedKey), k.id)
+                // Simple: we just use ID
+                // Complex: wrong ID with symmetric key that can decrypt:
+                if (key is SymmetricKey || k.id == key.id) {
                     try {
+                        val dataKey = SymmetricKeys.create(key.etaDecrypt(k.encryptedKey), k.id)
                         return dataKey.etaDecrypt(ciphertext)
-                    }
-                    catch(x: Exception) {
-                        throw DecryptionError()
+                    } catch (x: Exception) {
+                        // might be wrong symmetric key id
+                        if( key !is SymmetricKey) throw DecryptionError()
                     }
                 }
             }
@@ -226,11 +239,9 @@ sealed class Container {
         private inline fun <reified T> protect(f: () -> T): T =
             try {
                 f()
-            }
-            catch(x: DecryptionError) {
+            } catch (x: DecryptionError) {
                 throw x
-            }
-            catch (x: Exception) {
+            } catch (x: Exception) {
                 throw StructureError()
             }
     }

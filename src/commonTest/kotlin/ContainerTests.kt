@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 import net.sergeych.boss_serialization_mp.BossEncoder
 import net.sergeych.boss_serialization_mp.decodeBoss
 import net.sergeych.bossk.Bossk
@@ -6,10 +8,7 @@ import net.sergeych.mp_tools.indexOf
 import net.sergeych.mptools.toDump
 import net.sergeych.unikrypto.*
 import kotlin.random.Random
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class ContainerTests {
 
@@ -30,7 +29,7 @@ class ContainerTests {
 //        println(Bossk.unpack<Map<String, Any>>(pc1))
         assertTrue { pc1.indexOf("single") > 0 }
         assertTrue { pc1.indexOf("single") < 10 }
-        val r = Container.decrypt<String>(pc1, sk1)
+        assertNotNull(Container.decrypt<String>(pc1, sk1))
 //        println("\n\n Decrypted $r")
         assertEquals(src, Container.decrypt(pc1, sk1))
     }
@@ -57,16 +56,15 @@ class ContainerTests {
         val sk2 = SymmetricKeys.random()
         val sk3 = SymmetricKeys.random()
         val sk4 = SymmetricKeys.random()
-        val sk5 = SymmetricKeys.random()
 
         val pc1 = Container.encrypt(src, sk1, sk2, sk3)
 
         assertNull(Container.decrypt<String>(pc1, sk4))
         val pc2 = Container.update(pc1, Keyring(sk2), src2)!!
-        assertEquals(src2, Container.decrypt<String>(pc2!!, sk1))
-        assertEquals(src2, Container.decrypt<String>(pc2!!, sk2))
-        assertEquals(src2, Container.decrypt<String>(pc2!!, sk3))
-        assertEquals(null, Container.decrypt<String>(pc2!!, sk4))
+        assertEquals(src2, Container.decrypt<String>(pc2, sk1))
+        assertEquals(src2, Container.decrypt<String>(pc2, sk2))
+        assertEquals(src2, Container.decrypt<String>(pc2, sk3))
+        assertEquals(null, Container.decrypt<String>(pc2, sk4))
     }
 
 
@@ -131,7 +129,7 @@ class ContainerTests {
         assertEquals(src, Container.decrypt<String>(pc2, sk1))
 
         // Faulure 1: Not a container
-        var x = assertThrows<Container.StructureError> {
+        assertThrows<Container.StructureError> {
             Container.decryptAsBytes(Random.Default.nextBytes(pc1.size))
         }
 //        println(x)
@@ -140,11 +138,30 @@ class ContainerTests {
             Container.Single(sk1.id, sk2.etaEncrypt(
                 BossEncoder.encode(src))) as Container
         )
-        assertThrows<Container.DecryptionError> {
+        assertNull(
             Container.decryptAsBytes(pc3, sk1)
-        }
-        // Failre 3: paylaod is not a boss
+        )
 
+    }
+
+    @Test
+    fun unpackWithSymmetricKeyWithWrongID() {
+        val k1 = SymmetricKeys.random()
+        val k2 = SymmetricKeys.random()
+        val k3 = SymmetricKeys.random()
+        val k1wrongId = SymmetricKeys.create(k1.keyBytes,BytesId.random())
+
+        // Single:
+        var c = Container.encrypt("hello, world", k1)
+        assertEquals("hello, world", Container.decrypt(c,k1))
+        assertEquals("hello, world", Container.decrypt(c,k1wrongId))
+
+        // multi:
+        c = Container.encrypt("hello, world", k1, k2, k3)
+        assertEquals("hello, world", Container.decrypt(c,k1))
+        assertEquals("hello, world", Container.decrypt(c,k2))
+        assertEquals("hello, world", Container.decrypt(c,k3))
+        assertEquals("hello, world", Container.decrypt(c,k1wrongId))
     }
 
 }

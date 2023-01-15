@@ -68,7 +68,7 @@ class BytesId(override val id: ByteArray) : KeyIdentity() {
 
     companion object {
         fun fromString(data: String) = BytesId(data.decodeBase64Compact())
-        fun random() = BytesId(Random.nextBytes(32))
+        fun random() = BytesId(Random.nextBytes(16))
     }
 }
 

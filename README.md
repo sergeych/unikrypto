@@ -87,7 +87,7 @@ Sometimes it is convenient to switch to encrypted storage on the fly. In this ca
 
 ## Latest Changes
 
-### 1.2.4-rc2
+### 1.2.4
 - improved and fixed key addresses suuport for asymmetrics
 - added key addresses, same as in Universa
 - added keyrings

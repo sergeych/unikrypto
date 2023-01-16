@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "net.sergeych"
-version = "1.2.4-rc1"
+version = "1.2.4"
 
 repositories {
     mavenLocal()

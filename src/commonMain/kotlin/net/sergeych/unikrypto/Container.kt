@@ -119,7 +119,7 @@ sealed class Container {
                     try {
                         val dataKey = SymmetricKeys.create(key.etaDecrypt(k.encryptedKey), k.id)
                         return dataKey.etaDecrypt(ciphertext)
-                    } catch (x: Exception) {
+                    } catch (x: Throwable) {
                         // might be wrong symmetric key id
                         if( key !is SymmetricKey) throw DecryptionError()
                     }
@@ -239,9 +239,7 @@ sealed class Container {
         private inline fun <reified T> protect(f: () -> T): T =
             try {
                 f()
-            } catch (x: DecryptionError) {
-                throw x
-            } catch (x: Exception) {
+            } catch (t: Throwable) {
                 throw StructureError()
             }
     }

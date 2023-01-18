@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "net.sergeych"
-version = "1.2.4"
+version = "1.2.5-SNAPSHOT"
 
 repositories {
     mavenLocal()
@@ -66,7 +66,7 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
                 api("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
                 api("net.sergeych:boss-serialization-mp:[0.1.3-SNAPSHOT,)")
                 api("net.sergeych:mp_stools:[1.3.2-SNAPSHOT,)")
             }

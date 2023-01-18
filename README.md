@@ -6,7 +6,7 @@
 
 ## Current version
 
-We recommend `1.2.4-rc1`
+We recommend `1.2.5-SNAPSHOT` it has some necessary fixes in JS layer
 
 __1.2.*__ version are to use with __kotlin 1.7__. 
 
@@ -87,7 +87,7 @@ Sometimes it is convenient to switch to encrypted storage on the fly. In this ca
 
 ## Latest Changes
 
-### 1.2.4
+### 1.2.5
 - improved and fixed key addresses suuport for asymmetrics
 - added key addresses, same as in Universa
 - added keyrings

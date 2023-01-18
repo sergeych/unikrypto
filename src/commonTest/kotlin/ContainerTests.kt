@@ -82,8 +82,8 @@ class ContainerTests {
         assertNull(Container.decrypt<String>(pc1, sk4))
         assertNull(Container.decrypt<String>(pc1, sk5))
         assertEquals(src, Container.decrypt<String>(pc1, sk1))
-        assertEquals(src, Container.decrypt<String>(pc1, sk2))
         assertEquals(src, Container.decrypt<String>(pc1, sk3))
+        assertEquals(src, Container.decrypt<String>(pc1, sk2))
 
         assertEquals(src, Container.decrypt<String>(pc1, Keyring(sk4, sk5, sk3)))
         assertEquals(src, Container.decrypt<String>(pc1, sk4, sk5, sk1, sk2))

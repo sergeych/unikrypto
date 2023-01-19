@@ -6,9 +6,9 @@
 
 ## Current version
 
-We recommend `1.2.5-SNAPSHOT` it has some necessary fixes in JS layer
+We recommend `1.2.5` it has some necessary fixes in JS layer.
 
-__1.2.*__ version are to use with __kotlin 1.7__. 
+__1.2.*__ version are to use with __kotlin 1.7+__. 
 
 A new generation of cryptographic primitives that origins in the universa projects now in form of kotlin multiplatform library. It effectively works in 
 
@@ -33,7 +33,7 @@ Add dependency to where needed:
 ~~~
 dependencies {
     //...  
-    implementation("net.sergeych:unikrypto:1.1.1")
+    implementation("net.sergeych:unikrypto:1.2.5")
 }
 ~~~
 
@@ -95,11 +95,11 @@ Sometimes it is convenient to switch to encrypted storage on the fly. In this ca
 - added Diffie-Hellman support
 - added Safe58 support with crc-guarded contents
 
-### 1.2.1-SNAPSHOT
+### 1.2.1
 - many fixes and improvements
 - support for key address decoding in `AsymmetricKeys` provider.
 
-### 1.1.0-SNAPSHOT
+### 1.1.0
 
 - Introduced `AheadPrivateKeyGenerator` class to generate private keys in bacground ahead of time
 - Added platform based mutex surrogate that performs that uses mutex on JVM and does nothing on JS. Strange times require strange deeds.

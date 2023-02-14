@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> __RC2 stage__ used in production systems.
+> __RC3 stage__ used in production systems.
 
 ## Current version
 

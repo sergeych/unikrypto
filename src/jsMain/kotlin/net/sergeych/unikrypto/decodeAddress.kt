@@ -11,3 +11,7 @@ actual fun decodeAddress(text: String): KeyAddress = KeyAddressJs(Unicrypto.KeyA
 
 actual fun decodeAddress(data: ByteArray): KeyAddress =
     KeyAddressJs(Unicrypto.KeyAddress(data.toUint8Array()))
+
+@Suppress("unused")
+fun KeyAddress.universaAddress() = (this as KeyAddressJs).address
+

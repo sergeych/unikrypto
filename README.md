@@ -33,7 +33,7 @@ Add dependency to where needed:
 ~~~
 dependencies {
     //...  
-    implementation("net.sergeych:unikrypto:1.2.5")
+    implementation("net.sergeych:unikrypto:1.2.6")
 }
 ~~~
 
@@ -87,6 +87,8 @@ Sometimes it is convenient to switch to encrypted storage on the fly. In this ca
 
 ## Latest Changes
 
+### 1.2.6
+- better support for universa key address
 ### 1.2.5
 - improved and fixed key addresses suuport for asymmetrics
 - added key addresses, same as in Universa

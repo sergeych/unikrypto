@@ -135,11 +135,11 @@ external class Unicrypto {
 }
 
 @Suppress("unused")
-suspend fun InitUnicrypto() {
+actual suspend fun InitUnicrypto() {
     Unicrypto.unicryptoReady.await()
 }
 
-suspend fun <T>withUnicrypto(block: suspend ()->T): T {
+actual suspend fun <T>withUnicrypto(block: suspend ()->T): T {
     Unicrypto.unicryptoReady.await()
     return block()
 }

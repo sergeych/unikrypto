@@ -72,6 +72,21 @@ class BytesId(override val id: ByteArray) : KeyIdentity() {
     }
 }
 
+@Serializable
+@SerialName("SymmId")
+class SymmetricId(override val id: ByteArray) : KeyIdentity() {
+
+    companion object {
+        @Suppress("unused")
+        fun fromString(data: String) = SymmetricId(data.decodeBase64Compact())
+        @Suppress("unused")
+        fun fromKey(key: SymmetricKey) = fromKeyBytes(key.keyBytes)
+        fun fromKeyBytes(keyBytes: ByteArray) = SymmetricId(
+            HashAlgorithm.SHA3_256.digest(HashAlgorithm.SHA3_384.digest(keyBytes))
+        )
+    }
+}
+
 /**
  * Key identity that holds data necessary to derive a key from password using PBKDF2 algotithm.
  * Since it is serializable, it is easy to store PasswordID instance together with encrypted data

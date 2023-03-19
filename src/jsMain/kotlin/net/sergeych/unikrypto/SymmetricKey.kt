@@ -19,9 +19,6 @@ actual val SymmetricKeys: SymmetricKeyProvider = object : SymmetricKeyProvider {
     override val keySizes = arrayOf(32)
 
     override fun create(keyBytes: ByteArray,id: KeyIdentity): SymmetricKey = SymmetricKeyImpl(id, keyBytes)
-
-    override fun random() = SymmetricKeyImpl(BytesId.random(),Unicrypto.randomBytes(32).toByteArray())
-
 }
 
 actual fun HashAlgorithm.digest(vararg source: ByteArray): ByteArray {

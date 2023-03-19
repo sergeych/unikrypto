@@ -175,8 +175,19 @@ abstract class SymmetricKey(override val id: KeyIdentity): EncryptingKey, Decryp
  */
 interface SymmetricKeyProvider {
     val keySizes: Array<Int>
+
+    /**
+     * This function allow to override the [KeyIdentity], we do not recommend it usage anymore. Use [create]
+     * variant with a single parameter.
+     */
     fun create(keyBytes: ByteArray,id: KeyIdentity = BytesId(Random.Default.nextBytes(32))): SymmetricKey
-    fun random(): SymmetricKey
+    fun create(keyBytes: ByteArray): SymmetricKey = create(keyBytes, SymmetricId.fromKeyBytes(keyBytes))
+
+    /**
+     * Important note. From v.1.3 this function even overriden must provide new style key, e.g.
+     * using [SymmetricId] derived from packed key. We do not recomment to override it.
+     */
+    fun random() = create(Random.nextBytes(32))
 }
 
 /**
@@ -340,6 +351,7 @@ object IdentifiableKeySerializer : KSerializer<IdentifiableKey> {
             "public" -> AsymmetricKeys.unpackPublic(s.packed)
             "private" -> AsymmetricKeys.unpackPrivate(s.packed)
             "symmetric" -> SymmetricKeys.create(s.packed, s.id!!)
+            "symmetric2" -> SymmetricKeys.create(s.packed)
             else -> throw FormatException("unknown key type found")
         }
     }
@@ -350,7 +362,12 @@ object IdentifiableKeySerializer : KSerializer<IdentifiableKey> {
         val s = when(value) {
             is PublicKey -> IdentifiableKeySurrogate(null, "public", value.packed)
             is PrivateKey -> IdentifiableKeySurrogate(null, "private", value.packed)
-            is SymmetricKey -> IdentifiableKeySurrogate(value.id, "symmetric", value.packed)
+            is SymmetricKey -> {
+                if( value.id is SymmetricId )
+                    IdentifiableKeySurrogate(null, "symmetric2", value.packed)
+                else
+                    IdentifiableKeySurrogate(value.id, "symmetric", value.packed)
+            }
             else -> throw SerializationException("don't knwo how to serialize key $value")
         }
         encoder.encodeSerializableValue(IdentifiableKeySurrogate.serializer(),s)

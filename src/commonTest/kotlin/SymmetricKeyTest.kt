@@ -21,6 +21,15 @@ class SymmetricKeyTest {
             val k2 = SymmetricKeys.create(k.packed, k.id)
             assertTrue { k2.id == k.id }
             assertEquals(src, k2.etaDecryptToString(k.etaEncrypt(src)))
+            val k3 = SymmetricKeys.create(k.packed)
+            assertTrue { k3.id == k.id }
+            assertEquals(src, k3.etaDecryptToString(k.etaEncrypt(src)))
+            val oldKey = SymmetricKeys.create(k.keyBytes, BytesId(k.id.id))
+            assertTrue { oldKey.id == k.id }
+            assertEquals(src, oldKey.etaDecryptToString(k.etaEncrypt(src)))
+//            println(BossEncoder.encode(k3).toDump())
+//            println(BossEncoder.encode(oldKey).toDump())
+            assertTrue { BossEncoder.encode(k3).size < BossEncoder.encode(oldKey).size }
         }
     }
 
@@ -75,7 +84,7 @@ class SymmetricKeyTest {
 
             val ki1 = BossEncoder.encode(k1.id).decodeBoss<KeyIdentity>()
 
-            val e = BossEncoder.encode(k1.id)
+//            val e = BossEncoder.encode(k1.id)
 
             assertIs<PasswordId>(ki1)
             assertEquals(k1.id, ki1)
@@ -86,7 +95,8 @@ class SymmetricKeyTest {
     }
 
     @Test
-    fun symmetricKeyEtaTest() {
+    fun symmetricKeyEtaTest() = runTest {
+        InitUnicrypto()
         val src = "Hello world"
         val sk1 = SymmetricKeys.random()
 

@@ -160,6 +160,14 @@ abstract class SymmetricKey(override val id: KeyIdentity): EncryptingKey, Decryp
 
     override fun toString(): String =
         "SymmetricKey(${keyBytes.encodeToBase64Compact()}"
+
+    override fun equals(other: Any?): Boolean {
+        return other is SymmetricKey && other.keyBytes contentEquals keyBytes
+    }
+
+    override fun hashCode(): Int {
+        return keyBytes.contentHashCode()
+    }
 }
 
 /**
@@ -231,6 +239,14 @@ abstract class PublicKey: EncryptingKey, VerifyingKey  {
 
         return encryptBlock(part1) + part2
     }
+
+    override fun equals(other: Any?): Boolean {
+        return other is PublicKey && other.id == id
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
+    }
 }
 
 /**
@@ -272,6 +288,14 @@ abstract class PrivateKey: DecryptingKey, SigningKey  {
 
         val key = SymmetricKeys.create(encodedMessage.sliceArray(0 .. 31))
         return key.etaDecrypt(encodedMessage.sliceArray(32 until encodedMessage.size))
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return other is PrivateKey && other.id == id
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode()
     }
 }
 

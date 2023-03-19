@@ -60,28 +60,27 @@ sealed class Container {
 
     abstract fun update(keyRing: IdentifiableKeyring, newData: ByteArray): ByteArray?
 
-    fun selectKeys(keyRing: IdentifiableKeyring) = keyRing.getAllMatching<DecryptingKey>(keyIds)
-
     fun decrypt(keyRing: IdentifiableKeyring): Pair<IdentifiableKey, ByteArray>? {
         // Fast search: look for a key that shurely should
-        for (k in selectKeys(keyRing)) {
+        for (k in keyRing.byIdAndSymmetrics(keyIds)) {
             try {
-                return k to decrypt(k)
+                if( k is DecryptingKey )
+                    return k to decrypt(k)
             } catch (x: Throwable) {
                 // This means our key is not ok. It a rare but possible collision
             }
         }
-        // some symmetric key can sometimes decrypt even if their ID is wrong, so
-        // we check them all:
-        for (k in keyRing.keys) {
-            if (k is SymmetricKey) {
-                try {
-                    return k to decrypt(k)
-                } catch (x: Throwable) {
-                    // it's ok. we just tried
-                }
-            }
-        }
+//        // some symmetric key can sometimes decrypt even if their ID is wrong, so
+//        // we check them all:
+//        for (k in keyRing.keys) {
+//            if (k is SymmetricKey) {
+//                try {
+//                    return k to decrypt(k)
+//                } catch (x: Throwable) {
+//                    // it's ok. we just tried
+//                }
+//            }
+//        }
         return null
     }
 

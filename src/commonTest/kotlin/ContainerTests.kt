@@ -42,6 +42,7 @@ class ContainerTests {
         val sk2 = SymmetricKeys.random()
 
         val pc1 = Container.encrypt(src, sk1)
+        println(pc1.toDump())
         assertNull(Container.decrypt<String>(pc1, sk2))
         val pc2 = Container.update(pc1, Keyring(sk1), src2)
         assertEquals(src2, Container.decrypt<String>(pc2!!, sk1))

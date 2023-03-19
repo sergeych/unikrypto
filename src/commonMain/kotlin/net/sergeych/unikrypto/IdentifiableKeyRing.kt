@@ -13,7 +13,7 @@ abstract class IdentifiableKeyring {
     /**
      * Allow iterating over all keys held in the ring
      */
-    abstract val keys: Iterable<IdentifiableKey>
+    abstract val keys: Sequence<IdentifiableKey>
 
     /**
      * Get all the keys that match the dientity. It almost always return array of size 1 or 0, but for
@@ -25,6 +25,8 @@ abstract class IdentifiableKeyring {
      * Check that the ring contains the specified identity
      */
     open operator fun contains(keyIdentity: KeyIdentity) = get(keyIdentity).isNotEmpty()
+
+    operator fun contains(key: IdentifiableKey) = contains(key.id)
 
     /**
      * Size of the ring.
@@ -52,10 +54,44 @@ abstract class IdentifiableKeyring {
         return result
     }
 
-    inline fun <reified T: IdentifiableKey>getAllMatching(ids: Collection<KeyIdentity>): List<T> {
+    @Suppress("unused")
+    @Deprecated("use byId... family")
+    inline fun <reified T: IdentifiableKey>getAllMatching(ids: Collection<KeyIdentity>): Sequence<T> {
         val idSet = if( ids is Set<KeyIdentity>) ids else ids.toSet()
-        return keys.filter { it.id in idSet && it is T  } as List<T>
+        return keys.filter { it.id in idSet && it is T  } as Sequence<T>
     }
+
+    @Suppress("unused")
+    fun byId(vararg ids: KeyIdentity): Sequence<IdentifiableKey> = byId(ids.toSet())
+
+    fun byId(ids: Set<KeyIdentity>): Sequence<IdentifiableKey> = sequence {
+        for( k in keys ) {
+            if( k.id in ids ) yield(k)
+        }
+    }
+
+    /**
+     * Generate a sequence of (1) matching keys (2) other _symmetric_ keys: some old
+     * symmetric keys may have wrong ID after reconstruction from key bytes, in which case
+     * it is recommended to use this sequence
+     */
+    @Suppress("unused")
+    fun byIdAndSymmetrics(vararg ids: KeyIdentity) = byIdAndSymmetrics(ids.toSet())
+
+    /**
+     * Generate a sequence of (1) matching keys (2) other _symmetric_ keys: some old
+     * symmetric keys may have wrong ID after reconstruction from key bytes, in which case
+     * it is recommended to use this sequence
+     */
+    fun byIdAndSymmetrics(ids: Set<KeyIdentity>) = sequence {
+        // forsi matching
+        yieldAll(byId(ids))
+        // then symmetrics
+        for( k in keys ) {
+            if( k is SymmetricKey && k.id !in ids) yield(k)
+        }
+    }
+
 }
 
 /**
@@ -64,7 +100,7 @@ abstract class IdentifiableKeyring {
 @Suppress("unused")
 @Serializable
 class SingleKeyring(val key: IdentifiableKey): IdentifiableKeyring() {
-    override val keys: Iterable<IdentifiableKey> by lazy { listOf(key) }
+    override val keys: Sequence<IdentifiableKey> by lazy { sequence { yield(key) } }
 
     override fun get(keyIdentity: KeyIdentity): List<IdentifiableKey> =
         if (keyIdentity == key.id) listOf(key) else listOf()
@@ -100,7 +136,7 @@ class Keyring(val entries: MutableList<KeyEntry> = mutableListOf()): Identifiabl
     }
 
 
-    override val keys: Iterable<IdentifiableKey> get() = entries.map { it.key }
+    override val keys: Sequence<IdentifiableKey> get() = sequence { for( e in entries ) yield(e.key) }
 
     override fun get(keyIdentity: KeyIdentity): List<IdentifiableKey> =
         entries.mapNotNull { if( keyIdentity == it.key.id) it.key else null }

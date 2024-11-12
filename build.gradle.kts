@@ -1,13 +1,13 @@
 @file:Suppress("UNUSED_VARIABLE")
 
 plugins {
-    kotlin("multiplatform") version "1.7.21"
-    kotlin("plugin.serialization") version "1.7.21"
+    kotlin("multiplatform") version "1.9.21"
+    kotlin("plugin.serialization") version "2.0.0"
     `maven-publish`
 }
 
 group = "net.sergeych"
-version = "1.3.0-SNAPSHOT"
+version = "1.3.1-SNAPSHOT"
 
 repositories {
     mavenLocal()
@@ -21,13 +21,13 @@ repositories {
 
 kotlin {
     jvm {
-        compilations.all {
-            kotlinOptions.jvmTarget = "1.8"
-        }
-        withJava()
-        testRuns["test"].executionTask.configure {
-            useJUnitPlatform()
-        }
+//        compilations.all {
+//            kotlinOptions.jvmTarget = "1.8"
+//        }
+//        withJava()
+//        testRuns["test"].executionTask.configure {
+//            useJUnitPlatform()
+//        }
     }
     js(IR) {
         browser {
@@ -64,9 +64,9 @@ kotlin {
         }
         val commonMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
-                api("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+                api("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
                 api("net.sergeych:boss-serialization-mp:[0.1.3-SNAPSHOT,)")
                 api("net.sergeych:mp_stools:[1.3.2-SNAPSHOT,)")
             }
